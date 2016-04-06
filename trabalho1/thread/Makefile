@@ -2,7 +2,7 @@ CC=gcc
 CXXFLAGS=-g -Wall#-O3
 BIN=bin
 SRC=src
-OBJ=$(BIN)/matrix-thread.o
+OBJ=$(BIN)/matrix-thread.o $(BIN)/matrix.o
 TARGET=matrix-thread
 
 $(TARGET): $(OBJ)
