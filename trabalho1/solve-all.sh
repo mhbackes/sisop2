@@ -25,7 +25,11 @@ for teste in ${TESTS_DIR}/*txt; do
     outputName=`basename $testName .txt`.sol #nome do arquivo de saída
     sizeMatrix=`basename $testName .txt | sed 's/x.*//'` #tamanho da matriz quadrada
     for thread in $numOfThreads; do
-	echo -n  $(( $sizeMatrix * $sizeMatrix )) $thread" " >> ${RESULTS}/results.log # imprime no arquivo de resultados o número de elementos da matriz
-	(time ./matrix-thread $thread ${TESTS_DIR}/$testName ${TESTS_DIR}/$testName ${RESULTS}/$outputName) &>> ${RESULTS}/results.log
+	    echo -n  $(( $sizeMatrix * $sizeMatrix )) $thread" " >> ${RESULTS}/results.log 
+	for exec in `seq 1 10`; do
+	    tempo=`(time ./matrix-thread $thread ${TESTS_DIR}/$testName ${TESTS_DIR}/$testName ${RESULTS}/$outputName) 2>&1`
+	    echo -n $tempo " " >> ${RESULTS}/results.log 
+	done
+	echo " " >> ${RESULTS}/results.log 
     done
 done
