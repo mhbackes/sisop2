@@ -1,0 +1,19 @@
+* <2016-04-06 Qua>
+** instances-generator.sh
+  - gera benchmarks inteiros de matrizes quadradas. 
+  Deve-se passar como parâmetro:
+  1. o tamanho da primeira matriz
+  2. o incremento no tamanho a cada nova instância
+  3. o tamanho limite para a maior instância do benchmark
+*** OBSERVAÇÃO:
+    - python3 :: o script funciona a principio com python3
+
+** matrix-generate.py
+   - gera uma instância única de uma matriz
+  Deve-se passar como parâmetro:
+  1. o número de linhas
+  2. o número de colunas
+*** OBSERVAÇÃO:
+    - python3 :: o script funciona a principio com python3
+
+		 
