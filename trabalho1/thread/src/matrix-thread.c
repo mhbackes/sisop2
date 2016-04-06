@@ -16,12 +16,10 @@ int numRowsB, numColsB;
 int numRowsC, numColsC;
 int size;
 
-int getJob();
-void *doWork(void *arg);
-void dispatchThreads(int n);
+int numThreads;
 
-int job;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+void *doWork(void *arg);
+void dispatchThreads();
 
 int main(int argc, char *argv[])
 {
@@ -39,8 +37,8 @@ int main(int argc, char *argv[])
 	numColsC = numColsB;
 	size = numRowsC * numColsC;
 	C = malloc(sizeof(int) * size);
-	
-	dispatchThreads(atoi(argv[1]));
+	numThreads = atoi(argv[1]);
+	dispatchThreads();
 
 	if(argc > 4)
 		writeMatrix(argv[4], C, numRowsC, numColsC);
@@ -59,6 +57,13 @@ int toI(int elem, int numCols) {
 
 int toJ(int elem, int numCols) {
 	return elem % numCols;
+}
+
+void multiplyRow(int row) {
+	int i;
+	for(i = 0; i < numColsB; i++) {
+		multiplyRowCol(row, i);
+	}
 }
 
 void multiplyRowCol(int row, int col) {
@@ -107,32 +112,23 @@ void printMatrix(FILE* file, int *M, int numRows, int numCols) {
 	}
 }
 
-int getJob() {
-	pthread_mutex_lock(&mutex);
-	int n = job++;
-	pthread_mutex_unlock(&mutex);
-	return n;
-}
-
 void *doWork(void *args) {
-	//int id = (int) args;
+	//int id = (long) args;
 	//printf("Thread %d started.\n", id);
-	int job = getJob();
-	while(job < size) {
-		int i = toI(job, numColsC);
-		int j = toJ(job, numColsC);
-		//printf("Thread %d multiplying (%d, %d)\n", id, i, j);
-		multiplyRowCol(i, j);
-		job = getJob();
+	int row = (long) args;
+	while(row < numRowsC) {
+		//printf("Thread %d multiplying row %d\n", id, row);
+		multiplyRow(row);
+		row += numThreads;
 	}
 	return NULL;
 }
 
-void dispatchThreads(int n) {
-	pthread_t* threads = malloc(sizeof(pthread_t) * n);
-	int i;
-	for(i = 0; i < n; i++)
-		pthread_create(&threads[i], NULL, doWork, NULL);	
-	for (i = 0; i < n; i++)
+void dispatchThreads() {
+	pthread_t* threads = malloc(sizeof(pthread_t) * numThreads);
+	long i;
+	for(i = 0; i < numThreads; i++)
+		pthread_create(&threads[i], NULL, doWork, (void*) i);	
+	for (i = 0; i < numThreads; i++)
 		pthread_join(threads[i], NULL);
 }
