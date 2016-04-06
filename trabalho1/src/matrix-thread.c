@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
 		writeMatrix(argv[4], C);
 	else
 		printMatrix(stdout, C);
+	freeMatrix(A);
+	freeMatrix(B);
+	freeMatrix(C);
 	return 0;
 }
 

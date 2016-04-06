@@ -35,6 +35,11 @@ Matrix *makeMatrix(int numRows, int numCols) {
 	return M;
 }
 
+void freeMatrix(Matrix* M) {
+	free(M->data);
+	free(M);
+}
+
 Matrix* readMatrix(char* path) {
 	FILE* file = fopen(path, "r");
 	if(!file) {

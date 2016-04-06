@@ -2,15 +2,15 @@ CC=gcc
 CXXFLAGS=-g -Wall#-O3
 BIN=bin
 SRC=src
-OBJ=$(BIN)/matrix.o $(BIN)/matrix-thread.o $(BIN)/matrix-fork.o 
+LIBS=-lpthread
 
 all: matrix-thread matrix-fork
 
 matrix-thread: $(BIN)/matrix.o $(BIN)/matrix-thread.o
-	$(CC) $(CXXFLAGS) -o $@ $^ -lpthread
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 matrix-fork: $(BIN)/matrix.o $(BIN)/matrix-fork.o
-	$(CC) $(CXXFLAGS) -o $@ $^ -lpthread
+	$(CC) $(CXXFLAGS) -o $@ $^
 
 $(BIN)/%.o: $(SRC)/%.c $(BIN)
 	$(CC) $(CXXFLAGS) -c -o $@ $<

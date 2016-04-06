@@ -28,6 +28,8 @@ int toN(int row, int col, int numCols);
 
 Matrix *makeMatrix(int numRows, int numCols);
 
+void freeMatrix(Matrix* M);
+
 Matrix *readMatrix(char *path);
 
 void writeMatrix(char *path, Matrix *M);
