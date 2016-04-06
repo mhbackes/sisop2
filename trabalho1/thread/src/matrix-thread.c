@@ -75,7 +75,8 @@ int* readMatrix(char* path, int* numRows, int* numCols) {
 		fprintf(stderr, "Could not open input file %s\n", path);
 		exit(-1);
 	}
-	fscanf(file, "%d %d", numRows, numCols);
+	fscanf(file, "LINHAS = %d ", numRows);
+	fscanf(file, "COLUNAS = %d", numCols);
 	int size = *numRows * *numCols;
 	int *M = malloc(sizeof(int) * size);
 	int n;
@@ -97,7 +98,7 @@ void writeMatrix(char* path, int* M, int numRows, int numCols) {
 }
 
 void printMatrix(FILE* file, int *M, int numRows, int numCols) {
-	fprintf(file, "%d %d\n", numRows, numCols);
+	fprintf(file, "LINHAS = %d\nCOLUNAS = %d\n", numRows, numCols);
 	int i, j;
 	for (i = 0; i < numRows; ++i) {
 		for (j = 0; j < numCols; ++j)

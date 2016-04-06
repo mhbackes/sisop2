@@ -1,3 +1,4 @@
-2 3
+LINHAS = 2
+COLUNAS = 3
 1 2 3
 4 5 6
