@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <pthread.h>
 
 void multiplyRowCol(int row, int col);
 int toN(int row, int col, int numCols);
@@ -14,29 +14,36 @@ int *A, *B, *C;
 int numRowsA, numColsA;
 int numRowsB, numColsB;
 int numRowsC, numColsC;
+int size;
+
+int getJob();
+void *doWork(void *arg);
+void dispatchThreads(int n);
+
+int job;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char *argv[])
 {
-	if(argc < 3) {
-		printf("Usage: matrix-thread A B [C]\n");
+	if(argc < 4) {
+		printf("Usage: matrix-thread nThreads A B [C]\n");
 		return -1;
 	}
-	A = readMatrix(argv[1], &numRowsA, &numColsA);
-	B = readMatrix(argv[2], &numRowsB, &numColsB);
+	A = readMatrix(argv[2], &numRowsA, &numColsA);
+	B = readMatrix(argv[3], &numRowsB, &numColsB);
 	if(numColsA != numRowsB) {
 		fprintf(stderr, "Wrong matrix dimensions\n");
 		return -1;
 	}
 	numRowsC = numRowsA;
 	numColsC = numColsB;
-	C = malloc(sizeof(int) * numRowsC * numColsC);
-	int i, j;
-	for (i = 0; i < numRowsC; ++i) {
-		for (j = 0; j < numColsC; ++j)
-			multiplyRowCol(i, j);
-	}
-	if(argc > 3)
-		writeMatrix(argv[3], C, numRowsC, numColsC);
+	size = numRowsC * numColsC;
+	C = malloc(sizeof(int) * size);
+	
+	dispatchThreads(atoi(argv[1]));
+
+	if(argc > 4)
+		writeMatrix(argv[4], C, numRowsC, numColsC);
 	else
 		printMatrix(stdout, C, numRowsC, numColsC);
 	return 0;
@@ -97,4 +104,34 @@ void printMatrix(FILE* file, int *M, int numRows, int numCols) {
 			fprintf(file, "%d ", M[toN(i, j, numCols)]);
 		fprintf(file, "\n");
 	}
+}
+
+int getJob() {
+	pthread_mutex_lock(&mutex);
+	int n = job++;
+	pthread_mutex_unlock(&mutex);
+	return n;
+}
+
+void *doWork(void *args) {
+	//int id = (int) args;
+	//printf("Thread %d started.\n", id);
+	int job = getJob();
+	while(job < size) {
+		int i = toI(job, numColsC);
+		int j = toJ(job, numColsC);
+		//printf("Thread %d multiplying (%d, %d)\n", id, i, j);
+		multiplyRowCol(i, j);
+		job = getJob();
+	}
+	return NULL;
+}
+
+void dispatchThreads(int n) {
+	pthread_t* threads = malloc(sizeof(pthread_t) * n);
+	int i;
+	for(i = 0; i < n; i++)
+		pthread_create(&threads[i], NULL, doWork, NULL);	
+	for (i = 0; i < n; i++)
+		pthread_join(threads[i], NULL);
 }

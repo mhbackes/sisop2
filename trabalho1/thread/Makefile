@@ -6,7 +6,7 @@ OBJ=$(BIN)/matrix-thread.o
 TARGET=matrix-thread
 
 $(TARGET): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^
+	$(CC) $(CXXFLAGS) -o $@ $^ -lpthread
 
 $(BIN)/%.o: $(SRC)/%.c $(BIN)
 	$(CC) $(CXXFLAGS) -c -o $@ $<
