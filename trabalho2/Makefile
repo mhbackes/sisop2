@@ -1,5 +1,5 @@
 CC=gcc
-CXXFLAGS=-g -Wall#-O3
+CXXFLAGS=-g -std=c99 -Wall#-O3
 BIN=bin
 SRC=src
 LIB=-lpthread
