@@ -13,12 +13,12 @@ enum PhilState { THINKING, HUNGRY, EATING };
 
 // philosopher struct
 typedef struct philosopher_t { 
-	pthread_t thread;
-	int id;							// phil's id number
-	int prio;						// phil's eating priority
-	int state;						// phil's state (THINKING, HUNGRY, EATING)
-	sem_t *forkLeft, *forkRight;	// phil's forks
-	struct philosopher_t *philLeft, *philRight; // phil's neighbors
+  pthread_t thread;
+  int id;					// philosopher's id number
+  int prio;					// philosopher's eating priority
+  int state;					// philosopher's state (THINKING, HUNGRY, EATING)
+  sem_t *forkLeft, *forkRight;			// philosopher's forks
+  struct philosopher_t *philLeft, *philRight;	// philosopher's neighbors
 } Philosopher;
 
 sem_t *forks;
@@ -32,16 +32,16 @@ void serveDinner();
 void cleanDishes();
 void killPhilosophers();
 
-void *philDine(void *args);
-void philThink(Philosopher *p);
-void philHungry(Philosopher *p);
-void philEat(Philosopher *p);
+void *	philDine(void *args);
+void	philThink(Philosopher *p);
+void	philHungry(Philosopher *p);
+void	philEat(Philosopher *p);
 
-void philChangeState(Philosopher *p, int state);
-void philPrintStates();
-void philGrabForks(Philosopher *p);
-int philCanEat(Philosopher *p);
-void philReleaseForks(Philosopher *p);
+void	philChangeState(Philosopher *p, int state);
+void	philPrintStates();
+void	philGrabForks(Philosopher *p);
+int	philCanEat(Philosopher *p);
+void	philReleaseForks(Philosopher *p);
 
 int randomInt(int rangeMin, int rangeSize);
 
@@ -133,7 +133,7 @@ void philEat(Philosopher *p) {
 
 void philChangeState(Philosopher *p, int state) {
 	static pthread_mutex_t smutex = PTHREAD_MUTEX_INITIALIZER;
-	// mutex only necessary to make shure printing is correct
+	// mutex only necessary to make sure printing is correct
 	pthread_mutex_lock(&smutex);
 	p->state = state;
 	// whenever the philosopher changes his/her state, he/she resets his/her priority
@@ -154,7 +154,8 @@ void philGrabForks(Philosopher *p) {
 	philChangeState(p, HUNGRY);
 
 	// if the philosopher can't eat, he/she blocks himself/herself
-	while(!philCanEat(p)) sem_wait(&forkLock);
+	while(!philCanEat(p)) 
+	  sem_wait(&forkLock);
 
 	// grabs forks
 	sem_wait(p->forkLeft);
@@ -181,11 +182,13 @@ int philCanEat(Philosopher *p) {
 					(rightState == THINKING || (rightState == HUNGRY && selfPrio >= rightPrio));
 
 	// whenever the philosopher is unable to eat, his/her priority increases
-	if(!canEat)	p->prio++;
+	if(!canEat)	
+	  p->prio++;
 
 	// if the philosopher shouldn't eat, he/she signals the next philosopher, 
 	// so his/her hungry neighbor has a chance to eat
-	if(!shouldEat) sem_post(&forkLock);
+	if(!shouldEat) 
+	  sem_post(&forkLock);
 
 	// philosopher will only grab both forks if he/she can eat and he/she should eat
 	return canEat && shouldEat;
