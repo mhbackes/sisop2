@@ -17,7 +17,7 @@ typedef struct philosopher_t {
   int id;					// philosopher's id number
   int prio;					// philosopher's eating priority
   int state;					// philosopher's state (THINKING, HUNGRY, EATING)
-  //pthread_cond_t *forkLeft, *forkRight;		// philosopher's forks
+  //  pthread_cond_t *forkLeft, *forkRight;	// philosopher's forks
   struct philosopher_t *philLeft, *philRight;	// philosopher's neighbors
 } Philosopher;
 
@@ -80,8 +80,8 @@ void invitePhilosophers() {
 		p->state = THINKING;
 		p->id = i;
 		p->prio = 0;
-		//p->forkLeft = &forks[i];
-		//p->forkRight = &forks[(i+1) % numPhils];
+		//		p->forkLeft = &forks[i];
+		//		p->forkRight = &forks[(i+1) % numPhils];
 		p->philLeft = &phils[(i+numPhils-1) % numPhils];
 		p->philRight = &phils[(i+1) % numPhils];
 	}
@@ -168,8 +168,8 @@ void philGrabForks(Philosopher *p) {
 	  pthread_cond_wait(&forkLock, &fmutex);
 
 	// grabs forks
-	//pthread_cond_wait(p->forkLeft, &fmutex);
-	//pthread_cond_wait(p->forkRight, &fmutex);
+	//	pthread_cond_wait(p->forkLeft, &fmutex);
+	//	pthread_cond_wait(p->forkRight, &fmutex);
 	philChangeState(p, EATING);
 
 	// signals next philosopher after grabbing forks
@@ -206,8 +206,8 @@ int philCanEat(Philosopher *p) {
 }
 
 void philReleaseForks(Philosopher *p) {
-	//pthread_cond_signal(p->forkLeft);
-	//pthread_cond_signal(p->forkRight);
+  //pthread_cond_signal(p->forkLeft);
+  //pthread_cond_signal(p->forkRight);
 	philChangeState(p, THINKING);
 }
 
