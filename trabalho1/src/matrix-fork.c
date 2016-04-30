@@ -23,13 +23,14 @@ void dispatchProcs();
 
 int main(int argc, char *argv[])
 {
-	if(argc < 4) {
-		printf("Usage: matrix-thread nProcs A B [C]\n");
-		return -1;
-	}
+  if(argc < 2) {
+    printf("Usage: matrix-thread nProcs \n");
+    return -1;
+  }
+
 	numProcs = atoi(argv[1]);
-	A = readMatrix(argv[2]);
-	B = readMatrix(argv[3]);
+	A = readMatrix(IN_1);
+	B = readMatrix(IN_2);
 	if(A->numCols != B->numRows) {
 		fprintf(stderr, "Wrong matrix dimensions\n");
 		return -1;
@@ -41,10 +42,9 @@ int main(int argc, char *argv[])
 
 	dispatchProcs();
 
-	if(argc > 4)
-		writeMatrix(argv[4], C);
-	else
-		printMatrix(stdout, C);
+	
+	writeMatrix(OUTPUT_FILE, C);	
+       
 	freeMatrix(A);
 	freeMatrix(B);
 	freeSharedMatrix(C);

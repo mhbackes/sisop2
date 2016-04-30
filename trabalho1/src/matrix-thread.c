@@ -13,13 +13,14 @@ void dispatchThreads();
 
 int main(int argc, char *argv[])
 {
-	if(argc < 4) {
-		printf("Usage: matrix-thread nThreads A B [C]\n");
+
+	if(argc < 2) {
+		printf("Usage: matrix-thread nThreads\n");
 		return -1;
 	}
 	numThreads = atoi(argv[1]);
-	A = readMatrix(argv[2]);
-	B = readMatrix(argv[3]);
+	A = readMatrix(IN_1);
+	B = readMatrix(IN_2);
 	if(A->numCols != B->numRows) {
 		fprintf(stderr, "Wrong matrix dimensions\n");
 		return -1;
@@ -28,10 +29,8 @@ int main(int argc, char *argv[])
 
 	dispatchThreads();
 
-	if(argc > 4)
-		writeMatrix(argv[4], C);
-	else
-		printMatrix(stdout, C);
+	writeMatrix(OUTPUT_FILE, C);
+
 	freeMatrix(A);
 	freeMatrix(B);
 	freeMatrix(C);

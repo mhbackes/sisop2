@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define IN_1 "in1.txt"
+#define IN_2 "in2.txt"
+#define OUTPUT_FILE "out.txt"
+
 typedef struct {
 	int numRows, numCols, *data;
 } Matrix;
