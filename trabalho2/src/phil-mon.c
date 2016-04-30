@@ -17,12 +17,11 @@ typedef struct philosopher_t {
   int id;					// philosopher's id number
   int prio;					// philosopher's eating priority
   int state;					// philosopher's state (THINKING, HUNGRY, EATING)
-  //  pthread_cond_t *forkLeft, *forkRight;	// philosopher's forks
   struct philosopher_t *philLeft, *philRight;	// philosopher's neighbors
 } Philosopher;
 
-pthread_cond_t *forks;
 pthread_cond_t forkLock = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t fmutex = PTHREAD_MUTEX_INITIALIZER;
 Philosopher *phils;
 int numPhils;
 
@@ -68,9 +67,6 @@ int main(int argc, char *argv[]) {
 }
 
 void setTheTable() {
-	forks = malloc(sizeof(pthread_cond_t) * numPhils);
-	for(int i = 0; i < numPhils; i++)
-		pthread_cond_init(&forks[i], NULL);
 }
 
 void invitePhilosophers() {
@@ -80,8 +76,6 @@ void invitePhilosophers() {
 		p->state = THINKING;
 		p->id = i;
 		p->prio = 0;
-		//		p->forkLeft = &forks[i];
-		//		p->forkRight = &forks[(i+1) % numPhils];
 		p->philLeft = &phils[(i+numPhils-1) % numPhils];
 		p->philRight = &phils[(i+1) % numPhils];
 	}
@@ -90,7 +84,6 @@ void invitePhilosophers() {
 }
 
 void cleanDishes() {
-	free(forks);
 }
 
 void killPhilosophers() {
@@ -158,8 +151,6 @@ void philPrintStates() {
 }
 
 void philGrabForks(Philosopher *p) {
-	static pthread_mutex_t fmutex = PTHREAD_MUTEX_INITIALIZER;
-
 	pthread_mutex_lock(&fmutex);
 
 	philChangeState(p, HUNGRY);
@@ -168,8 +159,6 @@ void philGrabForks(Philosopher *p) {
 	  pthread_cond_wait(&forkLock, &fmutex);
 
 	// grabs forks
-	//	pthread_cond_wait(p->forkLeft, &fmutex);
-	//	pthread_cond_wait(p->forkRight, &fmutex);
 	philChangeState(p, EATING);
 
 	// signals next philosopher after grabbing forks
@@ -206,9 +195,11 @@ int philCanEat(Philosopher *p) {
 }
 
 void philReleaseForks(Philosopher *p) {
-  //pthread_cond_signal(p->forkLeft);
-  //pthread_cond_signal(p->forkRight);
+	pthread_mutex_lock(&fmutex);
+
 	philChangeState(p, THINKING);
+
+	pthread_mutex_unlock(&fmutex);
 }
 
 int randomInt(int rangeMin, int rangeSize) {
