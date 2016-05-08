@@ -24,19 +24,29 @@ pthread_t receiver;
 
 char username[USERNAME_SIZE + 1];
 
+void getUserInput(Message *msg) {
+    // TODO better user input handling
+	printf("$ ");
+    strcpy(msg->username, username);
+    fgets(msg->text, TEXT_SIZE, stdin);
+    if(msg->text[0] == '/') {
+        if(strcmp("quit", &msg->text[1]))
+           msg->type = MSG_LOGOUT; 
+    } else
+        msg->type = MSG_CHAT;
+}
+
 void *cliSnd(void *args) {
 	int sockfd = *((int*) args);
     Message msg;
     msg.type = MSG_LOGIN;
     strcpy(msg.username, username);
     sendMessage(sockfd, &msg);
-	while (1) {
-		printf("$ ");
-        msg.type = MSG_CHAT;
-        strcpy(msg.username, username);
-        fgets(msg.text, TEXT_SIZE, stdin);
+	do {
+        getUserInput(&msg);
         sendMessage(sockfd, &msg);
-	}
+	} while (msg.type != MSG_LOGOUT);
+    exit(0);
 	return NULL;
 }
 

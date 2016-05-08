@@ -13,32 +13,13 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
-#include "message.h"
-#include "room.h"
-#include "session.h"
-#include "sessionlist.h"
+#include "command.h"
 
 #define PORT 4000
 #define BUFF_SIZE 128
 
-SessionList *onlineUsers;
-Room* room;
-
-void *sessionThread(void *args) {
-    Session *s = (Session*) args;
-    Message msg;
-    while(1) {
-        readMessage(s->socket, &msg);
-        roomBroadcast(room, &msg);
-    }
-    return NULL;
-}
-
 int main(int argc, char *argv[]) {
-    //TODO init server correctly
-    onlineUsers = createSessionList();
-    room = createRoom("A room");
-    //TODO init server correctly
+    serverInit();
 
 	int sockfd, newsockfd;
 	socklen_t clilen;
@@ -61,17 +42,7 @@ int main(int argc, char *argv[]) {
 	while(1) {
 		if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1) 
 			printf("ERROR on accept");
-
-        Message msg;
-        readMessage(newsockfd, &msg);
-        Session *s = createSession(newsockfd, msg.username);
-        if(insertSession(onlineUsers, s)) {
-            printf("Username already taken.\n");
-            deleteSession(s);
-        } else {
-            insertUser(room, s); // TODO multiple rooms
-            sessionRun(s, sessionThread);
-        }
+        startSession(newsockfd);
 	}
 
 	close(sockfd);

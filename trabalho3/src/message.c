@@ -44,6 +44,7 @@ int sendMessage(int socket, Message *msg) {
         }
         n += r;
     } while(n < sizeof(Message));
+    msg->type = ntohs(msg->type);
     return n;
 }
 
