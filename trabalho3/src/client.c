@@ -46,10 +46,16 @@ void getUserInput(Message *msg) {
         } else if(!strncmp("create ", &msg->text[1], 7)) {
            msg->type = MSG_CREATE_ROOM; 
            strncpy(msg->text, &msg->text[8], ROOMNAME_SIZE);
+        } else if(!strncmp("delete ", &msg->text[1], 7)) {
+           msg->type = MSG_DELETE_ROOM; 
+           strncpy(msg->text, &msg->text[8], ROOMNAME_SIZE);
         } else if(!strncmp("join ", &msg->text[1], 5)) {
            msg->type = MSG_JOIN_ROOM; 
            strncpy(msg->text, &msg->text[6], ROOMNAME_SIZE);
-        }
+        } else if(!strncmp("leave", &msg->text[1], 6)) {
+           msg->type = MSG_LEAVE_ROOM; 
+        } else
+            msg->type = MSG_CHAT;
     } else
         msg->type = MSG_CHAT;
 }

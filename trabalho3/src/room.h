@@ -26,6 +26,7 @@ void deleteRoom(Room* room);
 int insertUser(Room* r, Session* s);
 int removeUser(Room* r, Session* s);
 void roomBroadcast(Room* r, Message* msg);
+int roomNumUsers(Room* r);
 
 
 #endif /* ROOM_H */

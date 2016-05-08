@@ -20,7 +20,7 @@ int commandName(Session *s, Message *msg);
 int commandCreateRoom(Session *s, Message *msg);
 int commandDeleteRoom(Session *s, Message *msg);
 int commandJoinRoom(Session *s, Message *msg);
-int commandLeaveRoom(Session *s, Message *msg);
+int commandLeaveRoom(Session *s);
 
 void serverInit() {
     _onlineUsers = createSessionList();
@@ -32,7 +32,7 @@ int startSession(int socket) {
     readMessage(socket, &msg);
     Session *s = createSession(socket, msg.username);
     if(insertSession(_onlineUsers, s)) {
-        serverMessage(&msg, MSG_ERROR, "Username already taken");
+        serverMessage(&msg, MSG_ERROR, "Username already taken.");
         sendMessage(socket, &msg);
         deleteSession(s);
         return -1;
@@ -65,8 +65,12 @@ int execute(Session *s, Message *msg) {
             return commandName(s, msg);
         case MSG_CREATE_ROOM:
             return commandCreateRoom(s, msg);
+        case MSG_DELETE_ROOM:
+            return commandDeleteRoom(s, msg);
         case MSG_JOIN_ROOM:
             return commandJoinRoom(s, msg);
+        case MSG_LEAVE_ROOM:
+            return commandLeaveRoom(s);
         default:
             fprintf(stdout, "Unknown command.\n");
             return -1;
@@ -98,8 +102,14 @@ int commandChat(Session *s, Message *msg) {
 
 int commandName(Session *s, Message *msg) {
     Message rmsg;
+    if(s->room) {
+        serverMessage(&rmsg, MSG_ERROR,
+                "You must leave the room to change your name.");
+        sendMessage(s->socket, &rmsg);
+        return -1;
+    }
     if(findSession(_onlineUsers, msg->text)) {
-        serverMessage(&rmsg, MSG_ERROR, "Username already taken\n");
+        serverMessage(&rmsg, MSG_ERROR, "Username already taken.");
         sendMessage(s->socket, &rmsg);
         return -1;
     }
@@ -116,7 +126,7 @@ int commandName(Session *s, Message *msg) {
 int commandCreateRoom(Session *s, Message *msg) {
     Message rmsg;
     if(insertRoom(_rooms, msg->text)) {
-        serverMessage(&rmsg, MSG_ERROR, "Room already exists");
+        serverMessage(&rmsg, MSG_ERROR, "Room already exists.");
         sendMessage(s->socket, &rmsg);
         return -1;
     }
@@ -127,13 +137,33 @@ int commandCreateRoom(Session *s, Message *msg) {
     return 0;
 }
 
-int commandDeleteRoom(Session *s, Message *msg); //TODO
+int commandDeleteRoom(Session *s, Message *msg) {
+    Message rmsg;
+    Room* r = findRoom(_rooms, msg->text);
+    if(!r) {
+        serverMessage(&rmsg, MSG_ERROR, "Room does not exist.");
+        sendMessage(s->socket, &rmsg);
+        return -1;
+    }
+    if(roomNumUsers(r)) {
+        serverMessage(&rmsg, MSG_ERROR, "Room is not empty.");
+        sendMessage(s->socket, &rmsg);
+        return -1;
+    }
+    if(!removeRoom(_rooms, msg->text)) 
+        deleteRoom(r);
+    serverMessage(&rmsg, MSG_SUCCESS, "");
+    sendMessage(s->socket, &rmsg);
+    fprintf(stdout, "Client \"%s\" deleted room \"%s\".\n",
+            s->username, msg->text);
+    return 0;
+}
 
 int commandJoinRoom(Session *s, Message *msg) {
     Message rmsg;
     Room *r = findRoom(_rooms, msg->text);
     if(!r) {
-        serverMessage(&rmsg, MSG_ERROR, "Room does not exist");
+        serverMessage(&rmsg, MSG_ERROR, "Room does not exist.");
         sendMessage(s->socket, &rmsg);
         return -1;
     }
@@ -143,7 +173,20 @@ int commandJoinRoom(Session *s, Message *msg) {
     fprintf(stdout, "Client \"%s\" joined room \"%s\".\n",
             s->username, msg->text);
     return 0;
-    
 }
 
-int commandLeaveRoom(Session *s, Message *msg); //TODO
+int commandLeaveRoom(Session *s) {
+    Message rmsg;
+    Room* r = s->room;
+    if(!r) {
+        serverMessage(&rmsg, MSG_ERROR, "You are not in a room.");
+        sendMessage(s->socket, &rmsg);
+        return -1;
+    }
+    removeUser(r, s);
+    serverMessage(&rmsg, MSG_SUCCESS, "");
+    sendMessage(s->socket, &rmsg);
+    fprintf(stdout, "Client \"%s\" left room \"%s\".\n",
+            s->username, r->roomname);
+    return 0;
+}

@@ -26,6 +26,6 @@ Session* findSession(SessionList *sl, char *username);
 int removeSession(SessionList *sl, Session *s);
 void sessionListBroadcast(SessionList *sl, Message* m);
 
-int sessionCmp(void *s, void *t);
+int sessionNumUsers(SessionList *sl);
 
 #endif /* SESSIONLIST_H */

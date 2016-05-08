@@ -41,3 +41,7 @@ int removeUser(Room* r, Session* s) {
 void roomBroadcast(Room* r, Message* msg) {
     sessionListBroadcast(r->users, msg);
 }
+
+int roomNumUsers(Room* r) {
+    return sessionNumUsers(r->users);
+}

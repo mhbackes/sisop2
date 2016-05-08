@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+int sessionCmp(void *s, void *t);
 void sessionSendMessage(void *data, void *args);
 
 SessionList* createSessionList() {
@@ -62,4 +63,8 @@ void sessionSendMessage(void *data, void *args) {
     Session* s = (Session*) data;
     Message* msg = (Message*) args;
     sendMessage(s->socket, msg);
+}
+
+int sessionNumUsers(SessionList *sl) {
+    return sl->sessions->size;
 }
