@@ -22,6 +22,7 @@ SessionList* createSessionList();
 void deleteSessionList(SessionList *sl);
 
 int insertSession(SessionList *sl, Session *s);
+Session* findSession(SessionList *sl, char *username);
 int removeSession(SessionList *sl, Session *s);
 void sessionListBroadcast(SessionList *sl, Message* m);
 

@@ -24,28 +24,49 @@ pthread_t receiver;
 
 char username[USERNAME_SIZE + 1];
 
+/* remove fgets \n */
+void trimm(char *s) {
+    int i = strlen(s) - 1;
+    if(s[i] == '\n')
+        s[i] = '\0';
+}
+
 void getUserInput(Message *msg) {
     // TODO better user input handling
-	printf("$ ");
     strcpy(msg->username, username);
     fgets(msg->text, TEXT_SIZE, stdin);
+    trimm(msg->text);
     if(msg->text[0] == '/') {
-        if(strcmp("quit", &msg->text[1]))
+        if(!strncmp("quit", &msg->text[1], 4))
            msg->type = MSG_LOGOUT; 
+        if(!strncmp("name ", &msg->text[1], 4)) {
+           msg->type = MSG_NAME; 
+           strncpy(msg->text, &msg->text[6], USERNAME_SIZE);
+        }
     } else
         msg->type = MSG_CHAT;
+}
+
+void login(int socket) {
+    Message msg;
+    clientMessage(&msg, MSG_LOGIN, username, "");
+    sendMessage(socket, &msg);
+    readMessage(socket, &msg);
+    if(msg.type == MSG_ERROR) {
+        fprintf(stderr, "Error: %s\n", msg.text);
+        close(socket);
+        exit(-1);
+    }
 }
 
 void *cliSnd(void *args) {
 	int sockfd = *((int*) args);
     Message msg;
-    msg.type = MSG_LOGIN;
-    strcpy(msg.username, username);
-    sendMessage(sockfd, &msg);
 	do {
         getUserInput(&msg);
         sendMessage(sockfd, &msg);
 	} while (msg.type != MSG_LOGOUT);
+    close(sockfd);
     exit(0);
 	return NULL;
 }
@@ -55,7 +76,17 @@ void *cliRcv(void *args) {
     Message msg;
 	while(1) {
         readMessage(sockfd, &msg);
-		fprintf(stdout, "%s: %s", msg.username, msg.text);
+        switch(msg.type) {
+            case MSG_CHAT:
+		        fprintf(stdout, "%s: %s\n", msg.username, msg.text);
+                break;
+            case MSG_SUCCESS:
+                fprintf(stdout, "Server: success.\n");
+                break;
+            case MSG_ERROR:
+		        fprintf(stdout, "Server: error - %s", msg.text);
+                break;
+        }
 	}
 }
 
@@ -87,6 +118,7 @@ int main(int argc, char *argv[]) {
 	if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         printf("ERROR connecting\n");
 
+    login(sockfd);
 	pthread_create(&sender, NULL, cliSnd, &sockfd);
 	pthread_create(&receiver, NULL, cliRcv,&sockfd);
 

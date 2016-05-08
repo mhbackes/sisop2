@@ -21,6 +21,7 @@ enum MessageType {
     MSG_ENTER_ROOM, 
     MSG_EXIT_ROOM, 
     MSG_SUCCESS,
+    MSG_NAME_SUCCESS,
     MSG_ERROR
 };
 
@@ -32,5 +33,8 @@ typedef struct message {
 
 int readMessage(int socket, Message *msg);
 int sendMessage(int socket, Message *msg);
+
+void serverMessage(Message* msg, int type, char* text);
+void clientMessage(Message* msg, int type, char* username, char* text);
 
 #endif /* MESSAGE_H */

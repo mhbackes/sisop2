@@ -36,6 +36,14 @@ int insertSession(SessionList *sl, Session *s) {
     return n;
 }
 
+Session* findSession(SessionList *sl, char *username) {
+    Session *r;
+    pthread_mutex_lock(&sl->mutex);
+    r = bstFind(sl->sessions, username);
+    pthread_mutex_unlock(&sl->mutex);
+    return r;
+}
+
 int removeSession(SessionList *sl, Session *s) {
     Session *r;
     pthread_mutex_lock(&sl->mutex);

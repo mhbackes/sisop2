@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <string.h>
 #include <strings.h>
 #include <netinet/in.h>
 
@@ -48,3 +49,14 @@ int sendMessage(int socket, Message *msg) {
     return n;
 }
 
+void serverMessage(Message* msg, int type, char* text) {
+    msg->type = type;
+    strncpy(msg->username, "SERVER", USERNAME_SIZE);
+    strncpy(msg->text, text, TEXT_SIZE);
+}
+
+void clientMessage(Message* msg, int type, char* username, char* text) {
+    msg->type = type;
+    strncpy(msg->username, username, USERNAME_SIZE);
+    strncpy(msg->text, text, TEXT_SIZE);
+}

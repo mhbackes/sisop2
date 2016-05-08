@@ -16,7 +16,6 @@
 #include "command.h"
 
 #define PORT 4000
-#define BUFF_SIZE 128
 
 int main(int argc, char *argv[]) {
     serverInit();
