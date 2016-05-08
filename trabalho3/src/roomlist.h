@@ -20,7 +20,8 @@ typedef struct roomlist {
 RoomList* createRoomList();
 void deleteRoomList(RoomList *rl);
 
-int insertRoom(RoomList *rl, Room *r);
-int removeRoom(RoomList *rl, Room *r);
+int insertRoom(RoomList *rl, char *roomname);
+Room* findRoom(RoomList *rl, char *roomname);
+int removeRoom(RoomList *rl, char *roomname);
 
 #endif /* ROOMLIST_H */

@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #include "message.h"
+#include "room.h"
 
 #define PORT 4000
 #define BUFF_SIZE 128
@@ -39,9 +40,15 @@ void getUserInput(Message *msg) {
     if(msg->text[0] == '/') {
         if(!strncmp("quit", &msg->text[1], 4))
            msg->type = MSG_LOGOUT; 
-        if(!strncmp("name ", &msg->text[1], 4)) {
+        else if(!strncmp("name ", &msg->text[1], 5)) {
            msg->type = MSG_NAME; 
            strncpy(msg->text, &msg->text[6], USERNAME_SIZE);
+        } else if(!strncmp("create ", &msg->text[1], 7)) {
+           msg->type = MSG_CREATE_ROOM; 
+           strncpy(msg->text, &msg->text[8], ROOMNAME_SIZE);
+        } else if(!strncmp("join ", &msg->text[1], 5)) {
+           msg->type = MSG_JOIN_ROOM; 
+           strncpy(msg->text, &msg->text[6], ROOMNAME_SIZE);
         }
     } else
         msg->type = MSG_CHAT;
@@ -84,7 +91,7 @@ void *cliRcv(void *args) {
                 fprintf(stdout, "Server: success.\n");
                 break;
             case MSG_ERROR:
-		        fprintf(stdout, "Server: error - %s", msg.text);
+		        fprintf(stdout, "Server: error - %s\n", msg.text);
                 break;
         }
 	}

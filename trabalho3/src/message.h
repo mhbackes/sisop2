@@ -14,14 +14,18 @@
 #define TEXT_SIZE 255
 
 enum MessageType {
+    // commands
     MSG_LOGIN, 
     MSG_LOGOUT, 
     MSG_CHAT, 
     MSG_NAME, 
-    MSG_ENTER_ROOM, 
-    MSG_EXIT_ROOM, 
+    MSG_CREATE_ROOM,
+    MSG_DELETE_ROOM,
+    MSG_JOIN_ROOM, 
+    MSG_LEAVE_ROOM, 
+
+    // server messages
     MSG_SUCCESS,
-    MSG_NAME_SUCCESS,
     MSG_ERROR
 };
 

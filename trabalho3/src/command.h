@@ -9,6 +9,7 @@
 
 #include "message.h"
 #include "room.h"
+#include "roomlist.h"
 #include "session.h"
 #include "sessionlist.h"
 
