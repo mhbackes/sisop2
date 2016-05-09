@@ -22,6 +22,10 @@ typedef struct session {
 } Session;
 
 Session* createSession(int socket, char* username);
+
+/* 
+ * Terminates OWN session thread and frees used memory.
+ */
 void deleteSession(Session* s);
 void sessionRun(Session *s, void *thread (void*));
 

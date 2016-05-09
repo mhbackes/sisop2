@@ -77,7 +77,10 @@ void *cliSnd(void *args) {
     Message msg;
 	do {
         getUserInput(&msg);
-        sendMessage(sockfd, &msg);
+        if(sendMessage(sockfd, &msg) <= 0) {
+            fprintf(stdout, "Server disconnected.\n");
+            exit(0);
+        }
 	} while (msg.type != MSG_LOGOUT);
     close(sockfd);
     exit(0);
@@ -88,7 +91,10 @@ void *cliRcv(void *args) {
 	int sockfd = *((int*) args);
     Message msg;
 	while(1) {
-        readMessage(sockfd, &msg);
+        if(readMessage(sockfd, &msg) <= 0) {
+            fprintf(stdout, "Server disconnected.\n");
+            exit(0);
+        }
         switch(msg.type) {
             case MSG_CHAT:
 		        fprintf(stdout, "%s: %s\n", msg.username, msg.text);

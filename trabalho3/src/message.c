@@ -22,10 +22,7 @@ int readMessage(int socket, Message *msg) {
     bzero(buff, sizeof(Message));
     do {
         r += read(socket, &buff[n], sizeof(Message) - n);
-        if(r < 0) {
-            fprintf(stderr, "Error reading socket\n");
-            exit(-1);
-        }
+        if(r <= 0) return r;
         n += r;
     } while(n < sizeof(Message));
     msg->type = ntohs(msg->type);
@@ -39,10 +36,7 @@ int sendMessage(int socket, Message *msg) {
     char *buff = (char*) msg;
     do {
         r += write(socket, &buff[n], sizeof(Message) - n);
-        if(r < 0) {
-            fprintf(stderr, "Error writing socket\n");
-            exit(-1);
-        }
+        if(r <= 0) return r;
         n += r;
     } while(n < sizeof(Message));
     msg->type = ntohs(msg->type);
