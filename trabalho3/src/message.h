@@ -35,10 +35,26 @@ typedef struct message {
     char text[TEXT_SIZE + 1];
 } Message;
 
+/*
+ * Reads message msg from the given socket file descriptor.
+ * Returns the number of bytes read on success and zero or less on fail.
+ */
 int readMessage(int socket, Message *msg);
+
+/*
+ * Writes message msg at the given socket file descriptor.
+ * Returns the number of bytes written on success and zero or less on fail.
+ */
 int sendMessage(int socket, Message *msg);
 
+/*
+ * Initializes message msg as a server message.
+ */
 void serverMessage(Message* msg, int type, char* text);
+
+/*
+ * Initializes message msg as a client message.
+ */
 void clientMessage(Message* msg, int type, char* username, char* text);
 
 #endif /* MESSAGE_H */

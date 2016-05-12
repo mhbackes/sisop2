@@ -17,15 +17,23 @@
 /* Chat room struct */
 typedef struct room {
     char roomname[ROOMNAME_SIZE + 1];   // Chat room name
-    SessionList* users;             // List of user sessions in the room
-    pthread_mutex_t mutex;          // Chat room mutex
+    SessionList* users;                 // List of user sessions in the room
 } Room;
 
+/*
+ * Creates room with name 'roomname'.
+ */
 Room* createRoom(char* roomname);
 void deleteRoom(Room* room);
+
 int insertUser(Room* r, Session* s);
 int removeUser(Room* r, Session* s);
+
+/*
+ * Sends message to all sessions in the current room.
+ */
 void roomBroadcast(Room* r, Message* msg);
+
 int roomNumUsers(Room* r);
 
 

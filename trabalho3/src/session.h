@@ -25,8 +25,14 @@ Session* createSession(int socket, char* username);
 
 /* 
  * Terminates OWN session thread and frees used memory.
+ * Make sure to only execute this function using the thread created by
+ * this session.
  */
 void deleteSession(Session* s);
+
+/*
+ * Starts the session thread running the given function.
+ */
 void sessionRun(Session *s, void *thread (void*));
 
 #endif /* SESSION_H */

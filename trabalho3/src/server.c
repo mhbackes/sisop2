@@ -18,24 +18,29 @@
 #define PORT 4000
 
 int main(int argc, char *argv[]) {
+    // init
     serverInit();
 
 	int sockfd, newsockfd;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         printf("ERROR opening socket");
+        exit(-1);
+    }
 	
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(serv_addr.sin_zero), 8);     
     
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
 		printf("ERROR on binding");
+        exit(-1);
+    }
 	
-	listen(sockfd, 5);
+	listen(sockfd, 8);
 	
 	clilen = sizeof(struct sockaddr_in);
 	while(1) {

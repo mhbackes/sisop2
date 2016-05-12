@@ -16,7 +16,6 @@ Room* createRoom(char* roomname) {
     Room* r = malloc(sizeof(Room));
     strncpy(r->roomname, roomname, ROOMNAME_SIZE);
     r->users = createSessionList();
-    pthread_mutex_init(&r->mutex, NULL);
     return r;
 }
 

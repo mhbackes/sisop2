@@ -24,6 +24,10 @@ void deleteSessionList(SessionList *sl);
 int insertSession(SessionList *sl, Session *s);
 Session* findSession(SessionList *sl, char *username);
 int removeSession(SessionList *sl, Session *s);
+
+/*
+ * Broadcast message to all socket sessions in the list.
+ */
 void sessionListBroadcast(SessionList *sl, Message* m);
 
 int sessionNumUsers(SessionList *sl);

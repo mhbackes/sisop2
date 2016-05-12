@@ -13,8 +13,22 @@
 #include "session.h"
 #include "sessionlist.h"
 
+/*
+ * Initializes server tree structures.
+ */
 void serverInit();
+
+/*
+ * Starts a new thread that will manage user requests received from the 
+ * given socket. Returns 0 on success and -1 on error, when username
+ * is already taken.
+ */
 int startSession(int socket);
+
+/*
+ * The session s executes the command request on message m. Returns 0 on
+ * success and -1 on fail.
+ */
 int execute(Session *s, Message *m);
 
 #endif /* COMMAND_H */

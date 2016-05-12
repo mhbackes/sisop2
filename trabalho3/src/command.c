@@ -12,8 +12,10 @@
 SessionList *_onlineUsers;
 RoomList *_rooms;
 
+// Session thread basic routine
 void *sessionThread(void *args);
 
+// Comands
 int commandLogout(Session *s);
 int commandChat(Session *s, Message *msg);
 int commandName(Session *s, Message *msg);
