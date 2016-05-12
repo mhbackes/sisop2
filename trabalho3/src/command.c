@@ -21,6 +21,7 @@ int commandCreateRoom(Session *s, Message *msg);
 int commandDeleteRoom(Session *s, Message *msg);
 int commandJoinRoom(Session *s, Message *msg);
 int commandLeaveRoom(Session *s);
+int commandUnknown(Session *s, Message *msg);
 
 /*
  * Ends session if error on socket.
@@ -46,7 +47,7 @@ int startSession(int socket) {
         deleteSession(s);
         return -1;
     } else {
-        serverMessage(&msg, MSG_SUCCESS, "");
+        serverMessage(&msg, MSG_SUCCESS, "Welcome.");
         sendMessage(socket, &msg);
         sessionRun(s, sessionThread);
         return 0;
@@ -81,8 +82,7 @@ int execute(Session *s, Message *msg) {
         case MSG_LEAVE_ROOM:
             return commandLeaveRoom(s);
         default:
-            fprintf(stdout, "Unknown command.\n");
-            return -1;
+            return commandUnknown(s, msg);
     }
 }
 
@@ -124,7 +124,7 @@ int commandName(Session *s, Message *msg) {
     removeSession(_onlineUsers, s);
     strncpy(s->username, msg->text, USERNAME_SIZE);
     insertSession(_onlineUsers, s);
-    serverMessage(&rmsg, MSG_SUCCESS, "");
+    serverMessage(&rmsg, MSG_SUCCESS, "Name changed");
     serverSendMessage(s, &rmsg);
     fprintf(stdout, "Client \"%s\" changed name to \"%s\".\n",
             msg->username, s->username);
@@ -138,7 +138,7 @@ int commandCreateRoom(Session *s, Message *msg) {
         serverSendMessage(s, &rmsg);
         return -1;
     }
-    serverMessage(&rmsg, MSG_SUCCESS, "");
+    serverMessage(&rmsg, MSG_SUCCESS, "Room created.");
     serverSendMessage(s, &rmsg);
     fprintf(stdout, "Client \"%s\" created room \"%s\".\n",
             s->username, msg->text);
@@ -160,7 +160,7 @@ int commandDeleteRoom(Session *s, Message *msg) {
     }
     if(!removeRoom(_rooms, msg->text)) 
         deleteRoom(r);
-    serverMessage(&rmsg, MSG_SUCCESS, "");
+    serverMessage(&rmsg, MSG_SUCCESS, "Room deleted.");
     serverSendMessage(s, &rmsg);
     fprintf(stdout, "Client \"%s\" deleted room \"%s\".\n",
             s->username, msg->text);
@@ -176,8 +176,6 @@ int commandJoinRoom(Session *s, Message *msg) {
         return -1;
     }
     insertUser(r, s);
-    serverMessage(&rmsg, MSG_SUCCESS, "");
-    serverSendMessage(s, &rmsg);
     fprintf(stdout, "Client \"%s\" joined room \"%s\".\n",
             s->username, msg->text);
     return 0;
@@ -192,11 +190,21 @@ int commandLeaveRoom(Session *s) {
         return -1;
     }
     removeUser(r, s);
-    serverMessage(&rmsg, MSG_SUCCESS, "");
+    serverMessage(&rmsg, MSG_SUCCESS, "You left the room.");
     serverSendMessage(s, &rmsg);
     fprintf(stdout, "Client \"%s\" left room \"%s\".\n",
             s->username, r->roomname);
     return 0;
+}
+
+int commandUnknown(Session *s, Message* msg) {
+    Message rmsg;
+    serverMessage(&rmsg, MSG_ERROR, "Unknown command.");
+    serverSendMessage(s, &rmsg);
+    fprintf(stdout, "Client \"%s\" sent unknown command: id %d.\n",
+            s->username, msg->type);
+    return 0;
+
 }
 
 void serverReadMessage(Session *s, Message *msg) {

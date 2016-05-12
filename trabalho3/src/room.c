@@ -7,6 +7,7 @@
 #include "room.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 int sessionCmp(void *s, void *t);
@@ -25,16 +26,31 @@ void deleteRoom(Room* r) {
 }
 
 int insertUser(Room* r, Session* s) {
+    // insert user
     if(insertSession(r->users, s))
         return -1;
     s->room = r;
+    // broadcast join message
+    Message msg;
+    char text[TEXT_SIZE + 1];
+    sprintf(text, "\"%s\" joined \"%s\".", s->username, r->roomname);
+    serverMessage(&msg, MSG_CHAT, text);
+    roomBroadcast(r, &msg);
     return 0;
 }
 
 int removeUser(Room* r, Session* s) {
+    // remove user
     if(removeSession(r->users, s))
         return -1;
     s->room = NULL;
+
+    //broadcast leave message
+    Message msg;
+    char text[TEXT_SIZE + 1];
+    sprintf(text, "\"%s\" left \"%s\".", s->username, r->roomname);
+    serverMessage(&msg, MSG_CHAT, text);
+    roomBroadcast(r, &msg);
     return 0;
 }
 
