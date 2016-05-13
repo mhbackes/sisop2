@@ -4,7 +4,7 @@ BIN=bin
 SRC=src
 CLIENT=client
 SERVER=server
-LIBS=-lpthread
+LIBS=-lpthread -lncurses
 
 SRC_FILES=$(wildcard $(SRC)/*.c)
 OBJ_FILES=$(patsubst $(SRC)/%.c, $(BIN)/%.o, $(SRC_FILES))

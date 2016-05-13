@@ -11,7 +11,7 @@
 
 #include "session.h"
 
-#define TEXT_SIZE 255
+#define TEXT_SIZE 511
 
 enum MessageType {
     // commands
@@ -23,6 +23,8 @@ enum MessageType {
     MSG_DELETE_ROOM,
     MSG_JOIN_ROOM, 
     MSG_LEAVE_ROOM, 
+    MSG_HELP,
+    MSG_CLEAR,
 
     // server messages
     MSG_SUCCESS,

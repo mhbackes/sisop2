@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <pthread.h>
+#include <ncurses.h>
 
 #include "message.h"
 #include "room.h"
@@ -54,6 +55,10 @@ void getUserInput(Message *msg) {
            strncpy(msg->text, &msg->text[6], ROOMNAME_SIZE);
         } else if(!strncmp("leave", &msg->text[1], 6)) {
            msg->type = MSG_LEAVE_ROOM; 
+	} else if(!strncmp("help", &msg->text[1], 5)) {
+           msg->type = MSG_HELP; 
+	} else if(!strncmp("clear", &msg->text[1], 6)) {
+           msg->type = MSG_CLEAR; 
         } else
             msg->type = MSG_CHAT;
     } else
@@ -104,7 +109,15 @@ void *cliRcv(void *args) {
                 break;
             case MSG_ERROR:
 		        fprintf(stdout, "%s: ERROR - %s\n", msg.username, msg.text);
+		        fprintf(stdout, "\t Send \"/help\" to check the list of commands.\n");
                 break;
+       	    case MSG_HELP:
+	      	        fprintf(stdout, "%s: HELP - %s\n", msg.username, msg.text);
+			break;
+       	    case MSG_CLEAR:
+	      system("clear");
+	      break;
+
         }
 	}
 }

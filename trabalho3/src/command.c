@@ -24,6 +24,8 @@ int commandDeleteRoom(Session *s, Message *msg);
 int commandJoinRoom(Session *s, Message *msg);
 int commandLeaveRoom(Session *s);
 int commandUnknown(Session *s, Message *msg);
+int commandHelp(Session *s);
+int commandClear(Session *s);
 
 /*
  * Ends session if error on socket.
@@ -83,6 +85,10 @@ int execute(Session *s, Message *msg) {
             return commandJoinRoom(s, msg);
         case MSG_LEAVE_ROOM:
             return commandLeaveRoom(s);
+        case MSG_HELP:
+	  return commandHelp(s);
+        case MSG_CLEAR:
+	  return commandClear(s);
         default:
             return commandUnknown(s, msg);
     }
@@ -209,6 +215,20 @@ int commandUnknown(Session *s, Message* msg) {
 
 }
 
+int commandHelp(Session *s) {
+  Message rmsg;
+  serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/clear         : Screen is clear.");
+  serverSendMessage(s, &rmsg);
+  return 0;
+}
+
+int commandClear(Session *s) {
+  Message rmsg;
+  serverMessage(&rmsg, MSG_CLEAR, "\n");
+  serverSendMessage(s, &rmsg);
+  return 0;
+}
+
 void serverReadMessage(Session *s, Message *msg) {
     if(readMessage(s->socket, msg) <= 0) {
         commandLogout(s);
@@ -220,3 +240,4 @@ void serverSendMessage(Session *s, Message *msg) {
         commandLogout(s);
     }
 }
+
