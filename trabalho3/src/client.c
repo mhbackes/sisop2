@@ -21,23 +21,23 @@
 #define PORT 4000
 #define BUFF_SIZE 128
 
-pthread_t sender;
-pthread_t receiver;
+pthread_t sender, receiver;
+
+WINDOW *receiverWindow, *senderWindow;
+WINDOW *receiverBorder, *senderBorder;
 
 char username[USERNAME_SIZE + 1];
 
-/* remove fgets \n */
-void trimm(char *s) {
-    int i = strlen(s) - 1;
-    if(s[i] == '\n')
-        s[i] = '\0';
-}
+void initUI();
+void endUI();
 
 void getUserInput(Message *msg) {
     // TODO better user input handling
     strcpy(msg->username, username);
-    fgets(msg->text, TEXT_SIZE, stdin);
-    trimm(msg->text);
+    wgetnstr(senderWindow, msg->text, TEXT_SIZE);
+    wclear(senderWindow);
+    wrefresh(senderWindow);
+    //trimm(msg->text);
     if(msg->text[0] == '/') {
         if(!strncmp("quit", &msg->text[1], 4))
            msg->type = MSG_LOGOUT; 
@@ -73,7 +73,7 @@ void login(int socket) {
     if(msg.type == MSG_ERROR) {
         fprintf(stderr, "Error: %s\n", msg.text);
         close(socket);
-        exit(-1);
+        endUI();
     }
 }
 
@@ -85,11 +85,11 @@ void *cliSnd(void *args) {
         if(sendMessage(sockfd, &msg) <= 0) {
             fprintf(stdout, "Server disconnected.\n");
             close(sockfd);
-            exit(0);
+            endUI();
         }
 	} while (msg.type != MSG_LOGOUT);
     close(sockfd);
-    exit(0);
+    endUI();
 	return NULL;
 }
 
@@ -100,26 +100,65 @@ void *cliRcv(void *args) {
         if(readMessage(sockfd, &msg) <= 0) {
             fprintf(stdout, "Server disconnected.\n");
             close(sockfd);
-            exit(0);
+            endUI();
         }
+        int x, y;
+        getyx(senderWindow, y, x); //saves current cursor position
         switch(msg.type) {
             case MSG_SUCCESS:
             case MSG_CHAT:
-		        fprintf(stdout, "%s: %s\n", msg.username, msg.text);
+                wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
                 break;
             case MSG_ERROR:
-		        fprintf(stdout, "%s: ERROR - %s\n", msg.username, msg.text);
-		        fprintf(stdout, "\t Send \"/help\" to check the list of commands.\n");
+                wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
+                wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
                 break;
-       	    case MSG_HELP:
-	      	        fprintf(stdout, "%s: HELP - %s\n", msg.username, msg.text);
-			break;
-       	    case MSG_CLEAR:
-	      system("clear");
-	      break;
-
+            case MSG_HELP:
+                wprintw(receiverWindow, "%s: HELP - %s\n", msg.username, msg.text);
+                break;
+            case MSG_CLEAR:
+                wclear(receiverWindow);
+                break;
         }
-	}
+        wrefresh(receiverWindow);
+        wmove(senderWindow, y, x); // restores cursor position
+        wrefresh(senderWindow);
+    }
+}
+
+void initUI() {
+    initscr();
+    cbreak();
+
+    // init windows
+    receiverWindow = newwin(LINES - 5, COLS - 2, 1, 1);
+    senderWindow = newwin(2, COLS - 2, LINES - 3, 1); 
+    receiverBorder = newwin(LINES - 3, COLS, 0, 0);
+    senderBorder = newwin(4, COLS, LINES - 4, 0); 
+
+    // set scrolling
+    scrollok(receiverWindow, TRUE);
+
+    // draw borders
+    wborder(receiverBorder, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE,
+                ACS_ULCORNER, ACS_URCORNER, ACS_LTEE, ACS_RTEE);
+    wborder(senderBorder, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE,
+                ACS_LTEE, ACS_RTEE, ACS_LLCORNER, ACS_LRCORNER);
+
+    // refresh
+    wrefresh(receiverBorder);
+    wrefresh(senderBorder);
+    wrefresh(receiverWindow);
+    wrefresh(senderWindow);
+}
+
+void endUI() {
+    endwin();
+    delwin(senderWindow);
+    delwin(senderBorder);
+    delwin(receiverWindow);
+    delwin(receiverBorder);
+    exit(0);
 }
 
 int main(int argc, char *argv[]) {
@@ -129,27 +168,32 @@ int main(int argc, char *argv[]) {
 	
     if (argc < 3) {
 		fprintf(stderr,"usage %s hostname username\n", argv[0]);
-		exit(0);
+		exit(-1);
     }
 	strncpy(username, argv[2], USERNAME_SIZE);
 
     server = gethostbyname(argv[1]);
 	if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
-        exit(0);
+        exit(-1);
     }
     
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         printf("ERROR opening socket\n");
+        exit(-1);
+    }
     
 	serv_addr.sin_family = AF_INET;     
 	serv_addr.sin_port = htons(PORT);    
 	serv_addr.sin_addr = *((struct in_addr *)server->h_addr_list[0]);
 	bzero(&(serv_addr.sin_zero), 8);     
 	
-	if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+	if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
         printf("ERROR connecting\n");
+        exit(-1);
+    }
 
+    initUI();
     login(sockfd);
 	pthread_create(&sender, NULL, cliSnd, &sockfd);
 	pthread_create(&receiver, NULL, cliRcv,&sockfd);
