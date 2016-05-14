@@ -26,6 +26,8 @@ int commandLeaveRoom(Session *s);
 int commandUnknown(Session *s, Message *msg);
 int commandHelp(Session *s);
 int commandClear(Session *s);
+int commandLS(Session *s);
+void printRoomList(BSTNode *x, Session *s);
 
 /*
  * Ends session if error on socket.
@@ -89,6 +91,8 @@ int execute(Session *s, Message *msg) {
 	  return commandHelp(s);
         case MSG_CLEAR:
 	  return commandClear(s);
+        case MSG_LS:
+	  return commandLS(s);
         default:
             return commandUnknown(s, msg);
     }
@@ -97,7 +101,7 @@ int execute(Session *s, Message *msg) {
 int commandLogout(Session *s) {
     if(s->room) removeUser(s->room, s);   
     removeSession(_onlineUsers, s);
-    fprintf(stdout, "Client \"%s\" disconnected.\n", s->username);
+    fprintf(stdout, "Client \"%s\" disconnected.", s->username);
     deleteSession(s);
     return 0;
 }
@@ -217,7 +221,7 @@ int commandUnknown(Session *s, Message* msg) {
 
 int commandHelp(Session *s) {
   Message rmsg;
-  serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/clear         : Screen is clear.");
+  serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/ls            : Lists all available rooms.\n\t/clear         : Screen is clear.");
   serverSendMessage(s, &rmsg);
   return 0;
 }
@@ -227,6 +231,28 @@ int commandClear(Session *s) {
   serverMessage(&rmsg, MSG_CLEAR, "\n");
   serverSendMessage(s, &rmsg);
   return 0;
+}
+
+int commandLS(Session *s) {
+  pthread_mutex_lock(&_rooms->mutex);
+  Message rmsg;
+  serverMessage(&rmsg, MSG_LS, "LIST OF ROOMS - ");
+  serverSendMessage(s, &rmsg);
+  BSTNode *x = _rooms->rooms->root;
+  printRoomList(x, s);
+  pthread_mutex_unlock(&_rooms->mutex);
+  return 0;
+}
+
+void printRoomList(BSTNode *x, Session *s) {
+ if (x == NULL) return;
+ else {
+   Message rmsg;
+   serverMessage(&rmsg, MSG_ITEM, x->key);
+   serverSendMessage(s, &rmsg);
+   printRoomList(x->left, s);
+   printRoomList(x->right, s);
+  }
 }
 
 void serverReadMessage(Session *s, Message *msg) {

@@ -25,6 +25,8 @@ enum MessageType {
     MSG_LEAVE_ROOM, 
     MSG_HELP,
     MSG_CLEAR,
+    MSG_LS,
+    MSG_ITEM,
 
     // server messages
     MSG_SUCCESS,

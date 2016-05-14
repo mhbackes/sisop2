@@ -59,6 +59,8 @@ void getUserInput(Message *msg) {
            msg->type = MSG_HELP; 
 	} else if(!strncmp("clear", &msg->text[1], 6)) {
            msg->type = MSG_CLEAR; 
+	} else if(!strncmp("ls", &msg->text[1], 3)) {
+           msg->type = MSG_LS; 
         } else
             msg->type = MSG_CHAT;
     } else
@@ -105,20 +107,30 @@ void *cliRcv(void *args) {
         int x, y;
         getyx(senderWindow, y, x); //saves current cursor position
         switch(msg.type) {
-            case MSG_SUCCESS:
-            case MSG_CHAT:
-                wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
-                break;
-            case MSG_ERROR:
-                wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
-                wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
-                break;
-            case MSG_HELP:
-                wprintw(receiverWindow, "%s: HELP - %s\n", msg.username, msg.text);
-                break;
-            case MSG_CLEAR:
-                wclear(receiverWindow);
-                break;
+	case MSG_SUCCESS:
+	case MSG_CHAT:
+	  wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
+	  break;
+	case MSG_ERROR:
+	  wattron(receiverWindow, COLOR_PAIR(1));
+	  wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
+	  wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
+	  wattroff(receiverWindow, COLOR_PAIR(1));
+	  break;
+	case MSG_HELP:
+	  wattron(receiverWindow, COLOR_PAIR(5));
+	  wprintw(receiverWindow, "%s: HELP - %s\n", msg.username, msg.text);
+	  wattroff(receiverWindow, COLOR_PAIR(5));
+	  break;
+	case MSG_CLEAR:
+	  wclear(receiverWindow);
+	  break;
+	case MSG_LS:
+	  wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
+	  break;
+	case MSG_ITEM:
+	  wprintw(receiverWindow, "\t%s\n", msg.text);
+	  break;
         }
         wrefresh(receiverWindow);
         wmove(senderWindow, y, x); // restores cursor position
@@ -128,6 +140,13 @@ void *cliRcv(void *args) {
 
 void initUI() {
     initscr();
+    start_color();
+    //    use_default_colors();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_BLUE, COLOR_BLACK);
+    init_pair(3, COLOR_GREEN, COLOR_BLACK);
+    init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(5, COLOR_BLACK, COLOR_WHITE);
     cbreak();
 
     // init windows

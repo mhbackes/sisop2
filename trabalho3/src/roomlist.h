@@ -24,4 +24,6 @@ int insertRoom(RoomList *rl, char *roomname);
 Room* findRoom(RoomList *rl, char *roomname);
 int removeRoom(RoomList *rl, char *roomname);
 
+//void printRoomList(RoomList *rl);
+
 #endif /* ROOMLIST_H */

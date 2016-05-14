@@ -39,7 +39,10 @@ int main(int argc, char *argv[]) {
 		printf("ERROR on binding");
         exit(-1);
     }
-	
+
+	system("clear");
+	//	char buf[255];
+	system("echo \"======== SERVER ON : $(date) =========\"");
 	listen(sockfd, 8);
 	
 	clilen = sizeof(struct sockaddr_in);
