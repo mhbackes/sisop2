@@ -27,9 +27,13 @@ Session* createSession(int socket, char* username) {
 }
 
 void deleteSession(Session* s) {
-    close(s->socket);
-    free(s);
+	freeSession(s);
     pthread_exit(NULL);
+}
+
+void freeSession(Session *s) {
+	close(s->socket);
+	free(s);
 }
 
 void sessionRun(Session *s, void *thread (void*)) {

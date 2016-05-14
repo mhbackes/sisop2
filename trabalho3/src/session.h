@@ -31,6 +31,11 @@ Session* createSession(int socket, char* username);
 void deleteSession(Session* s);
 
 /*
+ * Frees the memory allocated by session s. Does not terminate the thread.
+ */
+void freeSession(Session *s);
+
+/*
  * Starts the session thread running the given function.
  */
 void sessionRun(Session *s, void *thread (void*));

@@ -50,7 +50,7 @@ int startSession(int socket) {
     if(insertSession(_onlineUsers, s)) {
         serverMessage(&msg, MSG_ERROR, "Username already taken.");
         sendMessage(socket, &msg);
-        deleteSession(s);
+        freeSession(s);
         return -1;
     } else {
         serverMessage(&msg, MSG_SUCCESS, "Welcome.");
@@ -101,7 +101,7 @@ int execute(Session *s, Message *msg) {
 int commandLogout(Session *s) {
     if(s->room) removeUser(s->room, s);   
     removeSession(_onlineUsers, s);
-    fprintf(stdout, "Client \"%s\" disconnected.", s->username);
+    fprintf(stdout, "Client \"%s\" disconnected.\n", s->username);
     deleteSession(s);
     return 0;
 }

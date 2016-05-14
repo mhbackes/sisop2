@@ -19,7 +19,6 @@
 #include "room.h"
 
 #define PORT 4000
-#define BUFF_SIZE 128
 
 pthread_t sender, receiver;
 
@@ -73,9 +72,10 @@ void login(int socket) {
     sendMessage(socket, &msg);
     readMessage(socket, &msg);
     if(msg.type == MSG_ERROR) {
-        fprintf(stderr, "Error: %s\n", msg.text);
         close(socket);
         endUI();
+        fprintf(stderr, "Error: %s\n", msg.text);
+		exit(0);
     }
 }
 
@@ -85,9 +85,10 @@ void *cliSnd(void *args) {
 	do {
         getUserInput(&msg);
         if(sendMessage(sockfd, &msg) <= 0) {
-            fprintf(stdout, "Server disconnected.\n");
             close(sockfd);
             endUI();
+            fprintf(stdout, "Server disconnected.\n");
+			exit(0);
         }
 	} while (msg.type != MSG_LOGOUT);
     close(sockfd);
@@ -103,6 +104,7 @@ void *cliRcv(void *args) {
             fprintf(stdout, "Server disconnected.\n");
             close(sockfd);
             endUI();
+			exit(0);
         }
         int x, y;
         getyx(senderWindow, y, x); //saves current cursor position
@@ -177,7 +179,8 @@ void endUI() {
     delwin(senderBorder);
     delwin(receiverWindow);
     delwin(receiverBorder);
-    exit(0);
+	setvbuf(stdout, NULL, _IOLBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
 }
 
 int main(int argc, char *argv[]) {
