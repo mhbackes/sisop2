@@ -21,6 +21,10 @@ typedef struct sessionlist {
 SessionList* createSessionList();
 void deleteSessionList(SessionList *sl);
 
+/*
+ * Inserts sesion. Returns 0 on success, -1 on username taken and
+ * -2 on bad username.
+ */
 int insertSession(SessionList *sl, Session *s);
 Session* findSession(SessionList *sl, char *username);
 int removeSession(SessionList *sl, Session *s);

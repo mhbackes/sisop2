@@ -17,6 +17,11 @@
 
 #define PORT 4000
 
+int sockfd;
+pthread_t commandLineThread;
+
+void *serverCommandLine(void *args);
+
 int main(int argc, char *argv[]) {
     // init
     serverInit();
@@ -44,6 +49,9 @@ int main(int argc, char *argv[]) {
 	system("echo \"======== SERVER ON : $(date) =========\"");
 	listen(sockfd, 8);
 	
+	// server command line
+	pthread_create(&commandLineThread, NULL, serverCommandLine, NULL);
+
 	clilen = sizeof(struct sockaddr_in);
 	while(1) {
 		if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1) 
@@ -51,6 +59,13 @@ int main(int argc, char *argv[]) {
         startSession(newsockfd);
 	}
 
-	close(sockfd);
 	return 0; 
+}
+
+void *serverCommandLine(void *args) {
+	char buff[256] = {0};
+	while (strncmp(buff, "quit", 4))
+		fgets(buff, 256, stdin);
+	close(sockfd);
+	exit(0);
 }

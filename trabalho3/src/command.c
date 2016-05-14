@@ -28,6 +28,7 @@ int commandHelp(Session *s);
 int commandClear(Session *s);
 int commandLS(Session *s);
 void printRoomList(BSTNode *x, Session *s);
+int checkUsername(char* username);
 
 /*
  * Ends session if error on socket.
@@ -47,6 +48,12 @@ int startSession(int socket) {
     Message msg;
     readMessage(socket, &msg);
     Session *s = createSession(socket, msg.username);
+	if(checkUsername(msg.username)) {
+        serverMessage(&msg, MSG_ERROR, "Bad username.");
+        sendMessage(socket, &msg);
+		freeSession(s);
+		return -1;
+	}
     if(insertSession(_onlineUsers, s)) {
         serverMessage(&msg, MSG_ERROR, "Username already taken.");
         sendMessage(socket, &msg);
@@ -128,6 +135,12 @@ int commandName(Session *s, Message *msg) {
         serverSendMessage(s, &rmsg);
         return -1;
     }
+	if(checkUsername(msg->text)) {
+        serverMessage(&rmsg, MSG_ERROR,
+                "Bad username.");
+        serverSendMessage(s, &rmsg);
+        return -1;
+	}
     if(findSession(_onlineUsers, msg->text)) {
         serverMessage(&rmsg, MSG_ERROR, "Username already taken.");
         serverSendMessage(s, &rmsg);
@@ -141,6 +154,16 @@ int commandName(Session *s, Message *msg) {
     fprintf(stdout, "Client \"%s\" changed name to \"%s\".\n",
             msg->username, s->username);
     return 0;
+}
+
+int checkUsername(char* username) {
+	if(!*username)
+		return -1;
+	if(!strncmp(username, "SERVER", USERNAME_SIZE))
+		return -1;
+	if(strstr(username, " "))
+		return -1;
+	return 0;
 }
 
 int commandCreateRoom(Session *s, Message *msg) {
