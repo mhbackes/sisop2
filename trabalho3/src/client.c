@@ -30,6 +30,8 @@ char username[USERNAME_SIZE + 1];
 void initUI();
 void endUI();
 
+int nameColor(char* name);
+
 void getUserInput(Message *msg) {
     // TODO better user input handling
     strcpy(msg->username, username);
@@ -98,6 +100,7 @@ void *cliSnd(void *args) {
 
 void *cliRcv(void *args) {
 	int sockfd = *((int*) args);
+	int color;
     Message msg;
 	while(1) {
         if(readMessage(sockfd, &msg) <= 0) {
@@ -111,7 +114,11 @@ void *cliRcv(void *args) {
         switch(msg.type) {
 	case MSG_SUCCESS:
 	case MSG_CHAT:
-	  wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
+	  color = nameColor(msg.username);
+	  wattron(receiverWindow, COLOR_PAIR(color));
+	  wprintw(receiverWindow, "%s", msg.username);
+	  wattroff(receiverWindow, COLOR_PAIR(color));
+	  wprintw(receiverWindow, ": %s\n", msg.text);
 	  break;
 	case MSG_ERROR:
 	  wattron(receiverWindow, COLOR_PAIR(1));
@@ -120,9 +127,7 @@ void *cliRcv(void *args) {
 	  wattroff(receiverWindow, COLOR_PAIR(1));
 	  break;
 	case MSG_HELP:
-	  wattron(receiverWindow, COLOR_PAIR(5));
 	  wprintw(receiverWindow, "%s: HELP - %s\n", msg.username, msg.text);
-	  wattroff(receiverWindow, COLOR_PAIR(5));
 	  break;
 	case MSG_CLEAR:
 	  wclear(receiverWindow);
@@ -145,10 +150,11 @@ void initUI() {
     start_color();
     //    use_default_colors();
     init_pair(1, COLOR_RED, COLOR_BLACK);
-    init_pair(2, COLOR_BLUE, COLOR_BLACK);
-    init_pair(3, COLOR_GREEN, COLOR_BLACK);
-    init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
-    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_BLUE, COLOR_BLACK);
+    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(6, COLOR_CYAN, COLOR_BLACK);
     cbreak();
 
     // init windows
@@ -181,6 +187,15 @@ void endUI() {
     delwin(receiverBorder);
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
+}
+
+int nameColor(char* name) {
+	int sum = 0, i = 0;
+	if(!strncmp(name, "SERVER", USERNAME_SIZE))
+		return 1;
+	while(name[i])
+		sum += name[i++];
+	return sum % 5 + 2;
 }
 
 int main(int argc, char *argv[]) {
