@@ -27,6 +27,7 @@ enum MessageType {
     MSG_CLEAR,
     MSG_LS,
     MSG_ITEM,
+    MSG_PVT,
 
     // server messages
     MSG_SUCCESS,

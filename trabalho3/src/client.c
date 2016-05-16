@@ -64,8 +64,11 @@ void getUserInput(Message *msg) {
            msg->type = MSG_LS; 
         } else
             msg->type = MSG_CHAT;
-    } else
-        msg->type = MSG_CHAT;
+    } else 
+      if(msg->text[0] == '@')
+	msg->type = MSG_PVT;
+      else
+	msg->type = MSG_CHAT;
 }
 
 void login(int socket) {

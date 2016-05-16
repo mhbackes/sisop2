@@ -27,6 +27,8 @@ int commandUnknown(Session *s, Message *msg);
 int commandHelp(Session *s);
 int commandClear(Session *s);
 int commandLS(Session *s);
+int commandPrivate(Session *s, Message *msg);
+
 void printRoomList(BSTNode *x, Session *s);
 int checkUsername(char* username);
 
@@ -100,6 +102,8 @@ int execute(Session *s, Message *msg) {
 	  return commandClear(s);
         case MSG_LS:
 	  return commandLS(s);
+        case MSG_PVT:
+	  return commandPrivate(s, msg);
         default:
             return commandUnknown(s, msg);
     }
@@ -277,6 +281,31 @@ void printRoomList(BSTNode *x, Session *s) {
    printRoomList(x->right, s);
   }
 }
+
+
+int commandPrivate(Session *s, Message *msg) {
+  Message rmsg;
+  serverMessage(&rmsg, MSG_ERROR, "Function not implemented yet.");
+  serverSendMessage(s, &rmsg);
+  return 0;
+
+  char *receiver = strtok(msg->text, " ");
+  receiver++; //remove '@' of the string
+  strncpy(msg->username, s->username, USERNAME_SIZE);
+  if(!s->room) {
+    serverMessage(&rmsg, MSG_ERROR, "You must enter a room to chat.");
+    serverSendMessage(s, &rmsg);
+    return -1;
+  }
+  if(findSession(_onlineUsers, receiver)) {
+    roomBroadcast(s->room, msg);
+    fprintf(stdout, "Client \"%s\" sent message \"%s\" to \"%s\" in room \"%s\".\n", s->username, msg->text, receiver, s->room->roomname);
+  }
+  return 0;
+}
+
+
+
 
 void serverReadMessage(Session *s, Message *msg) {
     if(readMessage(s->socket, msg) <= 0) {
