@@ -9,7 +9,8 @@
 
 #include <pthread.h>
 
-#define USERNAME_SIZE 31
+#include "message.h"
+#include "common.h"
 
 struct room;
 
@@ -17,6 +18,7 @@ struct room;
 typedef struct session {
     int socket;                         // user current socket
     pthread_t thread;                   // session thread
+    pthread_mutex_t mutex;              // session socket mutex
     char username[USERNAME_SIZE + 1];   // user name
     struct room* room;                  // user's current room
 } Session;
@@ -39,5 +41,8 @@ void freeSession(Session *s);
  * Starts the session thread running the given function.
  */
 void sessionRun(Session *s, void *thread (void*));
+
+int sessionSendMessage(Session *s, Message *msg);
+int sessionReadMessage(Session *s, Message *msg);
 
 #endif /* SESSION_H */

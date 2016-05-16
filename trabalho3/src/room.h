@@ -12,8 +12,6 @@
 #include "sessionlist.h"
 #include "bstree.h"
 
-#define ROOMNAME_SIZE 31
-
 /* Chat room struct */
 typedef struct room {
     char roomname[ROOMNAME_SIZE + 1];   // Chat room name

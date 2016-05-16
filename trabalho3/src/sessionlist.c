@@ -9,17 +9,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-int sessionCmp(void *s, void *t);
-void sessionSendMessage(void *data, void *args);
+int slCmp(void *s, void *t);
+void slSendMessage(void *data, void *args);
 
 SessionList* createSessionList() {
     SessionList *sl = malloc(sizeof(SessionList));
-    sl->sessions = bstCreate(sessionCmp);
+    sl->sessions = bstCreate(slCmp);
     pthread_mutex_init(&sl->mutex, NULL);
     return sl;
 }
 
-int sessionCmp(void *s, void *t) {
+int slCmp(void *s, void *t) {
     return strncmp(s, t, USERNAME_SIZE);
 }
 
@@ -55,14 +55,14 @@ int removeSession(SessionList *sl, Session *s) {
 
 void sessionListBroadcast(SessionList *sl, Message* m) {
     pthread_mutex_lock(&sl->mutex);
-    bstTraverse(sl->sessions, sessionSendMessage, m);
+    bstTraverse(sl->sessions, slSendMessage, m);
     pthread_mutex_unlock(&sl->mutex);
 }
 
-void sessionSendMessage(void *data, void *args) {
+void slSendMessage(void *data, void *args) {
     Session* s = (Session*) data;
     Message* msg = (Message*) args;
-    sendMessage(s->socket, msg);
+    sessionSendMessage(s, msg);
 }
 
 int sessionNumUsers(SessionList *sl) {

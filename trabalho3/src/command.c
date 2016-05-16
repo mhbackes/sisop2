@@ -50,20 +50,20 @@ int startSession(int socket) {
     Message msg;
     readMessage(socket, &msg);
     Session *s = createSession(socket, msg.username);
-	if(checkUsername(msg.username)) {
+    if(checkUsername(msg.username)) {
         serverMessage(&msg, MSG_ERROR, "Bad username.");
-        sendMessage(socket, &msg);
-		freeSession(s);
-		return -1;
-	}
+        sessionSendMessage(s, &msg);
+        freeSession(s);
+        return -1;
+    }
     if(insertSession(_onlineUsers, s)) {
         serverMessage(&msg, MSG_ERROR, "Username already taken.");
-        sendMessage(socket, &msg);
+        sessionSendMessage(s, &msg);
         freeSession(s);
         return -1;
     } else {
         serverMessage(&msg, MSG_SUCCESS, "Welcome.");
-        sendMessage(socket, &msg);
+        sessionSendMessage(s, &msg);
         sessionRun(s, sessionThread);
         return 0;
     }
@@ -97,13 +97,13 @@ int execute(Session *s, Message *msg) {
         case MSG_LEAVE_ROOM:
             return commandLeaveRoom(s);
         case MSG_HELP:
-	  return commandHelp(s);
+            return commandHelp(s);
         case MSG_CLEAR:
-	  return commandClear(s);
+            return commandClear(s);
         case MSG_LS:
-	  return commandLS(s);
+            return commandLS(s);
         case MSG_PVT:
-	  return commandPrivate(s, msg);
+            return commandPrivate(s, msg);
         default:
             return commandUnknown(s, msg);
     }
@@ -139,12 +139,12 @@ int commandName(Session *s, Message *msg) {
         serverSendMessage(s, &rmsg);
         return -1;
     }
-	if(checkUsername(msg->text)) {
+    if(checkUsername(msg->text)) {
         serverMessage(&rmsg, MSG_ERROR,
                 "Bad username.");
         serverSendMessage(s, &rmsg);
         return -1;
-	}
+    }
     if(findSession(_onlineUsers, msg->text)) {
         serverMessage(&rmsg, MSG_ERROR, "Username already taken.");
         serverSendMessage(s, &rmsg);
@@ -161,13 +161,13 @@ int commandName(Session *s, Message *msg) {
 }
 
 int checkUsername(char* username) {
-	if(!*username)
-		return -1;
-	if(!strncmp(username, "SERVER", USERNAME_SIZE))
-		return -1;
-	if(strstr(username, " "))
-		return -1;
-	return 0;
+    if(!*username)
+        return -1;
+    if(!strncmp(username, "SERVER", USERNAME_SIZE))
+        return -1;
+    if(strstr(username, " "))
+        return -1;
+    return 0;
 }
 
 int commandCreateRoom(Session *s, Message *msg) {
@@ -247,74 +247,70 @@ int commandUnknown(Session *s, Message* msg) {
 }
 
 int commandHelp(Session *s) {
-  Message rmsg;
-  serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/ls            : Lists all available rooms.\n\t/clear         : Screen is clear.");
-  serverSendMessage(s, &rmsg);
-  return 0;
+    Message rmsg;
+    serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/ls            : Lists all available rooms.\n\t/clear         : Screen is clear.");
+    serverSendMessage(s, &rmsg);
+    return 0;
 }
 
 int commandClear(Session *s) {
-  Message rmsg;
-  serverMessage(&rmsg, MSG_CLEAR, "\n");
-  serverSendMessage(s, &rmsg);
-  return 0;
+    Message rmsg;
+    serverMessage(&rmsg, MSG_CLEAR, "\n");
+    serverSendMessage(s, &rmsg);
+    return 0;
 }
 
 int commandLS(Session *s) {
-  pthread_mutex_lock(&_rooms->mutex);
-  Message rmsg;
-  serverMessage(&rmsg, MSG_LS, "LIST OF ROOMS - ");
-  serverSendMessage(s, &rmsg);
-  BSTNode *x = _rooms->rooms->root;
-  printRoomList(x, s);
-  pthread_mutex_unlock(&_rooms->mutex);
-  return 0;
+    Message rmsg;
+    serverMessage(&rmsg, MSG_LS, "LIST OF ROOMS - ");
+    serverSendMessage(s, &rmsg);
+    BSTNode *x = _rooms->rooms->root;
+    pthread_mutex_lock(&_rooms->mutex);
+    pthread_mutex_lock(&s->mutex);
+    printRoomList(x, s);
+    pthread_mutex_unlock(&s->mutex);
+    pthread_mutex_unlock(&_rooms->mutex);
+    return 0;
 }
 
 void printRoomList(BSTNode *x, Session *s) {
- if (x == NULL) return;
- else {
-   Message rmsg;
-   serverMessage(&rmsg, MSG_ITEM, x->key);
-   serverSendMessage(s, &rmsg);
-   printRoomList(x->left, s);
-   printRoomList(x->right, s);
-  }
+    if (x == NULL) return;
+    else {
+        Message rmsg;
+        serverMessage(&rmsg, MSG_ITEM, x->key);
+        printRoomList(x->left, s);
+        sendMessage(s->socket, &rmsg);
+        printRoomList(x->right, s);
+    }
 }
-
 
 int commandPrivate(Session *s, Message *msg) {
-  Message rmsg;
-  serverMessage(&rmsg, MSG_ERROR, "Function not implemented yet.");
-  serverSendMessage(s, &rmsg);
-  return 0;
-
-  char *receiver = strtok(msg->text, " ");
-  receiver++; //remove '@' of the string
-  strncpy(msg->username, s->username, USERNAME_SIZE);
-  if(!s->room) {
-    serverMessage(&rmsg, MSG_ERROR, "You must enter a room to chat.");
-    serverSendMessage(s, &rmsg);
-    return -1;
-  }
-  if(findSession(_onlineUsers, receiver)) {
-    roomBroadcast(s->room, msg);
-    fprintf(stdout, "Client \"%s\" sent message \"%s\" to \"%s\" in room \"%s\".\n", s->username, msg->text, receiver, s->room->roomname);
-  }
-  return 0;
+    Message rmsg;
+    char *receiver = strtok(msg->text, " ");
+    receiver++; //remove '@' of the string
+    strncpy(msg->username, s->username, USERNAME_SIZE);
+    Session* dst = findSession(_onlineUsers, receiver);
+    if(!dst) {
+        serverMessage(&rmsg, MSG_ERROR, "Username not found.");
+        serverSendMessage(s, &rmsg);
+        return -1;
+    }
+    char *text = strtok(NULL, "");
+    strncpy(msg->text, text, TEXT_SIZE);
+    sessionSendMessage(dst, msg);
+    fprintf(stdout, "Client \"%s\" sent message \"%s\" to \"%s\".\n",
+            s->username, msg->text, dst->username);
+    return 0;
 }
 
-
-
-
 void serverReadMessage(Session *s, Message *msg) {
-    if(readMessage(s->socket, msg) <= 0) {
+    if(sessionReadMessage(s, msg) <= 0) {
         commandLogout(s);
     }
 }
 
 void serverSendMessage(Session *s, Message *msg) {
-    if(sendMessage(s->socket, msg) <= 0) {
+    if(sessionSendMessage(s, msg) <= 0) {
         commandLogout(s);
     }
 }

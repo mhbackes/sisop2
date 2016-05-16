@@ -58,8 +58,3 @@ int removeRoom(RoomList *rl, char *roomname) {
     if(s) return 0;
     return -1;
 }
-
-
-/*void printRoomList(RoomList * rl) {
-  return;
-  }*/

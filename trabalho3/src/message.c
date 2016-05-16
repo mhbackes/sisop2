@@ -42,7 +42,7 @@ int sendMessage(int socket, Message *msg) {
     msg->type = ntohs(msg->type);
     return n;
 }
-s
+
 void serverMessage(Message* msg, int type, char* text) {
     msg->type = type;
     strncpy(msg->username, "SERVER", USERNAME_SIZE);

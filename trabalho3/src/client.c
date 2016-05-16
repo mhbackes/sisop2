@@ -33,12 +33,10 @@ void endUI();
 int nameColor(char* name);
 
 void getUserInput(Message *msg) {
-    // TODO better user input handling
     strcpy(msg->username, username);
     wgetnstr(senderWindow, msg->text, TEXT_SIZE);
     wclear(senderWindow);
     wrefresh(senderWindow);
-    //trimm(msg->text);
     if(msg->text[0] == '/') {
         if(!strncmp("quit", &msg->text[1], 4))
            msg->type = MSG_LOGOUT; 
@@ -55,20 +53,21 @@ void getUserInput(Message *msg) {
            msg->type = MSG_JOIN_ROOM; 
            strncpy(msg->text, &msg->text[6], ROOMNAME_SIZE);
         } else if(!strncmp("leave", &msg->text[1], 6)) {
-           msg->type = MSG_LEAVE_ROOM; 
-	} else if(!strncmp("help", &msg->text[1], 5)) {
-           msg->type = MSG_HELP; 
-	} else if(!strncmp("clear", &msg->text[1], 6)) {
-           msg->type = MSG_CLEAR; 
-	} else if(!strncmp("ls", &msg->text[1], 3)) {
-           msg->type = MSG_LS; 
+            msg->type = MSG_LEAVE_ROOM; 
+        } else if(!strncmp("help", &msg->text[1], 5)) {
+            msg->type = MSG_HELP; 
+        } else if(!strncmp("clear", &msg->text[1], 6)) {
+            msg->type = MSG_CLEAR; 
+        } else if(!strncmp("ls", &msg->text[1], 3)) {
+            msg->type = MSG_LS; 
         } else
             msg->type = MSG_CHAT;
-    } else 
-      if(msg->text[0] == '@')
-	msg->type = MSG_PVT;
-      else
-	msg->type = MSG_CHAT;
+    } else {
+        if(msg->text[0] == '@')
+            msg->type = MSG_PVT;
+        else
+            msg->type = MSG_CHAT;
+    }
 }
 
 void login(int socket) {
@@ -102,45 +101,53 @@ void *cliSnd(void *args) {
 }
 
 void *cliRcv(void *args) {
-	int sockfd = *((int*) args);
-	int color;
+    int sockfd = *((int*) args);
+    int color;
     Message msg;
-	while(1) {
+    while(1) {
         if(readMessage(sockfd, &msg) <= 0) {
             fprintf(stdout, "Server disconnected.\n");
             close(sockfd);
             endUI();
-			exit(0);
+            exit(0);
         }
         int x, y;
         getyx(senderWindow, y, x); //saves current cursor position
         switch(msg.type) {
-	case MSG_SUCCESS:
-	case MSG_CHAT:
-	  color = nameColor(msg.username);
-	  wattron(receiverWindow, COLOR_PAIR(color));
-	  wprintw(receiverWindow, "%s", msg.username);
-	  wattroff(receiverWindow, COLOR_PAIR(color));
-	  wprintw(receiverWindow, ": %s\n", msg.text);
-	  break;
-	case MSG_ERROR:
-	  wattron(receiverWindow, COLOR_PAIR(1));
-	  wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
-	  wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
-	  wattroff(receiverWindow, COLOR_PAIR(1));
-	  break;
-	case MSG_HELP:
-	  wprintw(receiverWindow, "%s: HELP - %s\n", msg.username, msg.text);
-	  break;
-	case MSG_CLEAR:
-	  wclear(receiverWindow);
-	  break;
-	case MSG_LS:
-	  wprintw(receiverWindow, "%s: %s\n", msg.username, msg.text);
-	  break;
-	case MSG_ITEM:
-	  wprintw(receiverWindow, "\t%s\n", msg.text);
-	  break;
+            case MSG_PVT: 
+                wprintw(receiverWindow, "pvt#");
+            case MSG_SUCCESS:
+            case MSG_CHAT:
+                color = nameColor(msg.username);
+                wattron(receiverWindow, COLOR_PAIR(color));
+                wprintw(receiverWindow, "%s", msg.username);
+                wattroff(receiverWindow, COLOR_PAIR(color));
+                wprintw(receiverWindow, ": %s\n", msg.text);
+                break;
+            case MSG_ERROR:
+                wattron(receiverWindow, COLOR_PAIR(1));
+                wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
+                wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
+                wattroff(receiverWindow, COLOR_PAIR(1));
+                break;
+            case MSG_HELP:
+                wattron(receiverWindow, COLOR_PAIR(1));
+                wprintw(receiverWindow, "%s", msg.username);
+                wattroff(receiverWindow, COLOR_PAIR(1));
+                wprintw(receiverWindow, ": HELP - %s\n", msg.text);
+                break;
+            case MSG_CLEAR:
+                wclear(receiverWindow);
+                break;
+            case MSG_LS:
+                wattron(receiverWindow, COLOR_PAIR(1));
+                wprintw(receiverWindow, "%s", msg.username);
+                wattroff(receiverWindow, COLOR_PAIR(1));
+                wprintw(receiverWindow, ": %s\n", msg.text);
+                break;
+            case MSG_ITEM:
+                wprintw(receiverWindow, "\t%s\n", msg.text);
+                break;
         }
         wrefresh(receiverWindow);
         wmove(senderWindow, y, x); // restores cursor position

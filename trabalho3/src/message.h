@@ -9,9 +9,7 @@
 
 #include <stdint.h>
 
-#include "session.h"
-
-#define TEXT_SIZE 511
+#include "common.h"
 
 enum MessageType {
     // commands

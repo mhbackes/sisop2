@@ -22,8 +22,7 @@ SessionList* createSessionList();
 void deleteSessionList(SessionList *sl);
 
 /*
- * Inserts sesion. Returns 0 on success, -1 on username taken and
- * -2 on bad username.
+ * Inserts sesion. Returns 0 on success, -1 on username taken.
  */
 int insertSession(SessionList *sl, Session *s);
 Session* findSession(SessionList *sl, char *username);

@@ -39,3 +39,17 @@ void freeSession(Session *s) {
 void sessionRun(Session *s, void *thread (void*)) {
     pthread_create(&s->thread, NULL, thread, s);
 }
+
+int sessionSendMessage(Session *s, Message *msg) {
+    int n;
+    pthread_mutex_lock(&s->mutex);
+    n = sendMessage(s->socket, msg);
+    pthread_mutex_unlock(&s->mutex);
+    return n;
+}
+
+int sessionReadMessage(Session *s, Message *msg) {
+    int n;
+    n = readMessage(s->socket, msg);
+    return n;
+}
