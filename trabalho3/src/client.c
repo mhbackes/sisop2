@@ -37,7 +37,7 @@ void getUserInput(Message *msg) {
     wgetnstr(senderWindow, msg->text, TEXT_SIZE);
     wclear(senderWindow);
     wrefresh(senderWindow);
-    if(msg->text[0] == '/') {
+    if(msg->text[0] == '\\') {
         if(!strncmp("quit", &msg->text[1], 4))
            msg->type = MSG_LOGOUT; 
         else if(!strncmp("name ", &msg->text[1], 5)) {
@@ -127,7 +127,7 @@ void *cliRcv(void *args) {
             case MSG_ERROR:
                 wattron(receiverWindow, COLOR_PAIR(1));
                 wprintw(receiverWindow, "%s: ERROR - %s\n", msg.username, msg.text);
-                wprintw(receiverWindow, "\t Send \"/help\" to check the list of commands.\n");
+                wprintw(receiverWindow, "\t Send \"\\help\" to check the list of commands.\n");
                 wattroff(receiverWindow, COLOR_PAIR(1));
                 break;
             case MSG_HELP:

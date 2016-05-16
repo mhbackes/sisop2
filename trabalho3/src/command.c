@@ -248,7 +248,7 @@ int commandUnknown(Session *s, Message* msg) {
 
 int commandHelp(Session *s) {
     Message rmsg;
-    serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t/create <room> : Creates a new room named <room>. \n\t/join <room>   : Joins <room>. \n\t/name <name>   : Changes the user name to <name>. \n\t/leave         : User leaves the current room. \n\t/delete <room> : User deletes the room named <room>. \n\t/quit          : User quits the chat app. \n\t/ls            : Lists all available rooms.\n\t/clear         : Screen is clear.");
+    serverMessage(&rmsg, MSG_HELP, "You asked for HELP. :)\nList of commands.\n\t\\create <room> : Creates a new room named <room>. \n\t\\join <room>   : Joins <room>. \n\t\\name <name>   : Changes the user name to <name>. \n\t\\leave         : User leaves the current room. \n\t\\delete <room> : User deletes the room named <room>. \n\t\\quit          : User quits the chat app. \n\t\\ls            : Lists all available rooms.\n\t\\clear         : Screen is clear.\n\t@<username>    : Sends a private message to <username>.");
     serverSendMessage(s, &rmsg);
     return 0;
 }
@@ -298,6 +298,7 @@ int commandPrivate(Session *s, Message *msg) {
     char *text = strtok(NULL, "");
     strncpy(msg->text, text, TEXT_SIZE);
     sessionSendMessage(dst, msg);
+    sessionSendMessage(s, msg);
     fprintf(stdout, "Client \"%s\" sent message \"%s\" to \"%s\".\n",
             s->username, msg->text, dst->username);
     return 0;
