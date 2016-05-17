@@ -224,6 +224,8 @@ int commandJoinRoom(Session *s, Message *msg) {
         serverSendMessage(s, &rmsg);
         return -1;
     }
+    if(s->room)
+        removeUser(s->room, s);
     insertUser(r, s);
     fprintf(stdout, "Client \"%s\" joined room \"%s\".\n",
             s->username, msg->text);
