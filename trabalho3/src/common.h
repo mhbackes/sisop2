@@ -7,6 +7,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define PORT 4000
 #define TEXT_SIZE 511
 #define ROOMNAME_SIZE 31
 #define USERNAME_SIZE 31

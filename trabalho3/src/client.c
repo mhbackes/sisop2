@@ -16,9 +16,7 @@
 #include <ncurses.h>
 
 #include "message.h"
-#include "room.h"
-
-#define PORT 4000
+#include "common.h"
 
 pthread_t sender, receiver;
 
@@ -224,11 +222,13 @@ int main(int argc, char *argv[]) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(-1);
     }
+    printf("Host found\n.");
     
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         printf("ERROR opening socket\n");
         exit(-1);
     }
+    printf("Socket created\n.");
     
 	serv_addr.sin_family = AF_INET;     
 	serv_addr.sin_port = htons(PORT);    
@@ -239,6 +239,7 @@ int main(int argc, char *argv[]) {
         printf("ERROR connecting\n");
         exit(-1);
     }
+    printf("Connected\n");
 
     initUI();
     login(sockfd);

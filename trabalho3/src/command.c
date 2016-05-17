@@ -30,7 +30,7 @@ int commandLS(Session *s);
 int commandPrivate(Session *s, Message *msg);
 
 void printRoomList(BSTNode *x, Session *s);
-int checkUsername(char* username);
+int checkName(char* username);
 
 /*
  * Ends session if error on socket.
@@ -50,7 +50,7 @@ int startSession(int socket) {
     Message msg;
     readMessage(socket, &msg);
     Session *s = createSession(socket, msg.username);
-    if(checkUsername(msg.username)) {
+    if(checkName(msg.username)) {
         serverMessage(&msg, MSG_ERROR, "Bad username.");
         sessionSendMessage(s, &msg);
         freeSession(s);
@@ -139,9 +139,8 @@ int commandName(Session *s, Message *msg) {
         serverSendMessage(s, &rmsg);
         return -1;
     }
-    if(checkUsername(msg->text)) {
-        serverMessage(&rmsg, MSG_ERROR,
-                "Bad username.");
+    if(checkName(msg->text)) {
+        serverMessage(&rmsg, MSG_ERROR, "Bad username.");
         serverSendMessage(s, &rmsg);
         return -1;
     }
@@ -160,18 +159,23 @@ int commandName(Session *s, Message *msg) {
     return 0;
 }
 
-int checkUsername(char* username) {
-    if(!*username)
+int checkName(char* name) {
+    if(!*name)
         return -1;
-    if(!strncmp(username, "SERVER", USERNAME_SIZE))
+    if(!strncmp(name, "SERVER", USERNAME_SIZE))
         return -1;
-    if(strstr(username, " "))
+    if(strstr(name, " "))
         return -1;
     return 0;
 }
 
 int commandCreateRoom(Session *s, Message *msg) {
     Message rmsg;
+    if(checkName(msg->text)) {
+        serverMessage(&rmsg, MSG_ERROR, "Bad roomname.");
+        serverSendMessage(s, &rmsg);
+        return -1;
+    }
     if(insertRoom(_rooms, msg->text)) {
         serverMessage(&rmsg, MSG_ERROR, "Room already exists.");
         serverSendMessage(s, &rmsg);

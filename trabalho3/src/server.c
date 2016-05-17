@@ -14,8 +14,7 @@
 #include <pthread.h>
 
 #include "command.h"
-
-#define PORT 4000
+#include "common.h"
 
 int sockfd;
 pthread_t commandLineThread;
