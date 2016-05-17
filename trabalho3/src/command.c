@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 SessionList *_onlineUsers;
 RoomList *_rooms;
@@ -160,6 +161,11 @@ int commandName(Session *s, Message *msg) {
 }
 
 int checkName(char* name) {
+    int i = 0;
+    while(name[i]) {
+        if(!isalnum(name[i++]))
+            return -1;
+    }
     if(!*name)
         return -1;
     if(!strncmp(name, "SERVER", USERNAME_SIZE))
