@@ -1,7 +1,7 @@
 /*
  * session.h
  * Created on: 2016-05-06
- *	   Author: mhbackes <mhbackes@inf.ufrgs.br>
+ *     Alunos: Augusto, Marcos e Jean
  */
 
 #ifndef SESSION_H

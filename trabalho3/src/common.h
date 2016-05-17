@@ -1,7 +1,7 @@
 /*
  * common.h
  * Created on: 2016-05-16
- *	   Author: mhbackes <mhbackes@inf.ufrgs.br>
+ *     Alunos: Augusto, Marcos e Jean
  */
 
 #ifndef COMMON_H

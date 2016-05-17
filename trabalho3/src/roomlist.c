@@ -1,7 +1,7 @@
 /*
  * roomlist.c
  * Created on: 2016-05-08
- *     Author: mhbackes <mhbackes@inf.ufrgs.br>
+ *     Alunos: Augusto, Marcos e Jean
  */
 
 #include "roomlist.h"
